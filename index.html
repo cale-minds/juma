@@ -448,26 +448,115 @@
 		  	return null;
 		  }
 
-		  function moveBlockNearClientPosition(block, clientX, clientY) {
+		  function getWorkspaceCoordinateFromClient(clientX, clientY) {
+		  	var parentSvg = workspace.getParentSvg && workspace.getParentSvg();
+		  	var canvas = workspace.getCanvas && workspace.getCanvas();
+		  	if (parentSvg && canvas && parentSvg.createSVGPoint && canvas.getScreenCTM) {
+		  		var point = parentSvg.createSVGPoint();
+		  		point.x = clientX;
+		  		point.y = clientY;
+		  		var screenCtm = canvas.getScreenCTM();
+		  		if (screenCtm) {
+		  			return point.matrixTransform(screenCtm.inverse());
+		  		}
+		  	}
+
+		  	if (!parentSvg || !Blockly.mouseToSvg) {
+		  		return null;
+		  	}
+		  	var inverseScreenCTM = workspace.getInverseScreenCTM && workspace.getInverseScreenCTM();
+		  	var fallbackPoint = Blockly.mouseToSvg({clientX: clientX, clientY: clientY}, parentSvg, inverseScreenCTM);
+		  	fallbackPoint.x = fallbackPoint.x / workspace.scale;
+		  	fallbackPoint.y = fallbackPoint.y / workspace.scale;
+		  	return fallbackPoint;
+		  }
+
+		  function moveBlockNearClientPosition(block, clientX, clientY, offsetX, offsetY) {
 		  	if (typeof clientX != 'number' || typeof clientY != 'number' ||
-		  		!workspace.getParentSvg || !Blockly.mouseToSvg) {
+		  		!workspace.getParentSvg) {
 		  		return;
 		  	}
 
-		  	var inverseScreenCTM = workspace.getInverseScreenCTM && workspace.getInverseScreenCTM();
-		  	var point = Blockly.mouseToSvg({clientX: clientX, clientY: clientY}, workspace.getParentSvg(), inverseScreenCTM);
-		  	point.x = point.x / workspace.scale;
-		  	point.y = point.y / workspace.scale;
+		  	var point = getWorkspaceCoordinateFromClient(clientX, clientY);
+		  	if (!point) {
+		  		return;
+		  	}
 
+		  	offsetX = offsetX || 0;
+		  	offsetY = offsetY || 0;
 		  	var xy = block.getRelativeToSurfaceXY();
-		  	block.moveBy(point.x - xy.x, point.y - xy.y);
+		  	block.moveBy(point.x - (offsetX / workspace.scale) - xy.x,
+		  		point.y - (offsetY / workspace.scale) - xy.y);
 		  }
 
-		  function cloneFlyoutBlock(flyoutBlock, clientX, clientY) {
+		  function getFlyoutBlockOffset(block, event) {
+		  	var blockRoot = block.getSvgRoot();
+		  	if (!blockRoot || !blockRoot.getBoundingClientRect) {
+		  		return {x: 0, y: 0};
+		  	}
+
+		  	var rect = blockRoot.getBoundingClientRect();
+		  	return {
+		  		x: event.clientX - rect.left,
+		  		y: event.clientY - rect.top
+		  	};
+		  }
+
+		  function createDragPreview(drag) {
+		  	var parentSvg = workspace.getParentSvg && workspace.getParentSvg();
+		  	var blockRoot = drag.flyoutBlock.getSvgRoot();
+		  	if (!parentSvg || !blockRoot || !blockRoot.cloneNode) {
+		  		return;
+		  	}
+
+		  	var preview = Blockly.createSvgElement('g', {
+		  		'class': 'blocklyFallbackDragPreview',
+		  		'style': 'opacity: 0.55; pointer-events: none;'
+		  	}, parentSvg);
+		  	var clone = blockRoot.cloneNode(true);
+		  	clone.setAttribute('transform', 'translate(0,0)');
+		  	preview.appendChild(clone);
+		  	drag.preview = preview;
+		  	updateDragPreview(drag, drag.lastX, drag.lastY);
+		  }
+
+		  function updateDragPreview(drag, clientX, clientY) {
+		  	if (!drag.preview) {
+		  		return;
+		  	}
+
+		  	var parentSvg = workspace.getParentSvg && workspace.getParentSvg();
+		  	if (!parentSvg || !parentSvg.getBoundingClientRect) {
+		  		return;
+		  	}
+
+		  	var rect = parentSvg.getBoundingClientRect();
+		  	var x = clientX - rect.left - drag.offsetX;
+		  	var y = clientY - rect.top - drag.offsetY;
+		  	drag.preview.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+		  }
+
+		  function removeDragPreview(drag) {
+		  	if (drag && drag.preview && drag.preview.parentNode) {
+		  		drag.preview.parentNode.removeChild(drag.preview);
+		  	}
+		  	if (drag) {
+		  		drag.preview = null;
+		  	}
+		  }
+
+		  function hasDragMoved(drag, event) {
+		  	var dx = event.clientX - drag.startX;
+		  	var dy = event.clientY - drag.startY;
+		  	var threshold = Blockly.DRAG_RADIUS || 5;
+		  	return (dx * dx) + (dy * dy) >= threshold * threshold;
+		  }
+
+		  function cloneFlyoutBlock(flyoutBlock, clientX, clientY, offsetX, offsetY) {
 		  	var xml = Blockly.Xml.blockToDom(flyoutBlock);
 		  	Blockly.Xml.deleteNext(xml);
 		  	var block = Blockly.Xml.domToBlock(xml, workspace);
-		  	moveBlockNearClientPosition(block, clientX, clientY);
+		  	moveBlockNearClientPosition(block, clientX, clientY, offsetX, offsetY);
 		  	placeAddedBlock(block);
 		  	generateCode();
 		  	return block;
@@ -479,31 +568,67 @@
 		  		return;
 		  	}
 
-		  	var pendingFlyoutBlock = null;
-		  	var blockCountBefore = 0;
+		  	var fallbackDrag = null;
 		  	flyout.svgGroup_.addEventListener('mousedown', function(event) {
 		  		var block = getFlyoutTopBlockFromEvent(event);
 		  		if (!block) {
 		  			return;
 		  		}
 
-		  		pendingFlyoutBlock = block;
-		  		blockCountBefore = getWorkspaceBlockCount();
+		  		var offset = getFlyoutBlockOffset(block, event);
+		  		fallbackDrag = {
+		  			flyoutBlock: block,
+		  			blockCountBefore: getWorkspaceBlockCount(),
+		  			startX: event.clientX,
+		  			startY: event.clientY,
+		  			lastX: event.clientX,
+		  			lastY: event.clientY,
+		  			offsetX: offset.x,
+		  			offsetY: offset.y,
+		  			hasMoved: false,
+		  			preview: null
+		  		};
 		  	}, true);
 
-		  	document.addEventListener('mouseup', function(event) {
-		  		if (!pendingFlyoutBlock) {
+		  	document.addEventListener('mousemove', function(event) {
+		  		if (!fallbackDrag) {
 		  			return;
 		  		}
 
-		  		var flyoutBlock = pendingFlyoutBlock;
-		  		var previousCount = blockCountBefore;
-		  		var clientX = event.clientX;
-		  		var clientY = event.clientY;
-		  		pendingFlyoutBlock = null;
+		  		if (getWorkspaceBlockCount() != fallbackDrag.blockCountBefore) {
+		  			removeDragPreview(fallbackDrag);
+		  			fallbackDrag = null;
+		  			return;
+		  		}
+
+		  		fallbackDrag.lastX = event.clientX;
+		  		fallbackDrag.lastY = event.clientY;
+		  		fallbackDrag.hasMoved = fallbackDrag.hasMoved || hasDragMoved(fallbackDrag, event);
+		  		if (!fallbackDrag.hasMoved) {
+		  			return;
+		  		}
+
+		  		if (!fallbackDrag.preview) {
+		  			createDragPreview(fallbackDrag);
+		  		}
+		  		updateDragPreview(fallbackDrag, event.clientX, event.clientY);
+		  		event.preventDefault();
+		  	}, true);
+
+		  	document.addEventListener('mouseup', function(event) {
+		  		if (!fallbackDrag) {
+		  			return;
+		  		}
+
+		  		var drag = fallbackDrag;
+		  		drag.lastX = event.clientX;
+		  		drag.lastY = event.clientY;
+		  		drag.hasMoved = drag.hasMoved || hasDragMoved(drag, event);
+		  		fallbackDrag = null;
 		  		setTimeout(function() {
-		  			if (getWorkspaceBlockCount() == previousCount) {
-		  				cloneFlyoutBlock(flyoutBlock, clientX, clientY);
+		  			removeDragPreview(drag);
+		  			if (drag.hasMoved && getWorkspaceBlockCount() == drag.blockCountBefore) {
+		  				cloneFlyoutBlock(drag.flyoutBlock, drag.lastX, drag.lastY, drag.offsetX, drag.offsetY);
 		  			}
 		  		}, 100);
 		  	}, true);
