@@ -197,28 +197,76 @@
 
 		  Blockly.Xml.domToWorkspace(document.getElementById('startBlocks'), Blockly.mainWorkspace);
 
-		  function appendToStatementInput(parentBlock, inputName, childBlock) {
+		  var autoConnectRules = {
+		  	predefinedprefix: [{parentType: 'mapping', inputName: 'mapping', inputKind: 'statement'}],
+		  	prefix: [{parentType: 'mapping', inputName: 'mapping', inputKind: 'statement'}],
+		  	base: [{parentType: 'mapping', inputName: 'mapping', inputKind: 'statement'}],
+		  	triplemap: [{parentType: 'mapping', inputName: 'triplesmap', inputKind: 'statement'}],
+		  	tablesqlquery: [{parentType: 'triplemap', inputName: 'logicaltable', inputKind: 'statement'}],
+		  	subjectmap: [{parentType: 'triplemap', inputName: 'subjectmap', inputKind: 'statement'}],
+		  	class: [{parentType: 'subjectmap', inputName: 'termmap', inputKind: 'statement'}],
+		  	subjecttermtype: [{parentType: 'subjectmap', inputName: 'termmap', inputKind: 'statement'}],
+		  	subjectgraphtermap: [{parentType: 'subjectmap', inputName: 'termmap', inputKind: 'statement'}],
+		  	predicateobjectmap: [{parentType: 'triplemap', inputName: 'predicateobjectmap', inputKind: 'statement'}],
+		  	predicatemap: [{parentType: 'predicateobjectmap', inputName: 'ppredicateobjectmap', inputKind: 'statement'}],
+		  	predicatetermtype: [{parentType: 'predicatemap', inputName: 'termmap', inputKind: 'statement'}],
+		  	objectmap: [{parentType: 'predicateobjectmap', inputName: 'opredicateobjectmap', inputKind: 'statement'}],
+		  	parenttriplesmap: [{parentType: 'predicateobjectmap', inputName: 'opredicateobjectmap', inputKind: 'statement'}],
+		  	objecttermtype: [{parentType: 'objectmap', inputName: 'termmap', inputKind: 'statement'}],
+		  	datatype: [{parentType: 'objectmap', inputName: 'termmap', inputKind: 'statement'}],
+		  	language: [{parentType: 'objectmap', inputName: 'termmap', inputKind: 'statement'}],
+		  	inverseexpression: [{parentType: 'objectmap', inputName: 'termmap', inputKind: 'statement'}],
+		  	objectdatatype: [{parentType: 'objecttermtype', inputName: 'termtypevalue', inputKind: 'value'}],
+		  	objectlanguage: [{parentType: 'objecttermtype', inputName: 'termtypevalue', inputKind: 'value'}],
+		  	joincondition: [{parentType: 'parenttriplesmap', inputName: 'joincondition', inputKind: 'statement'}],
+		  	predicategraphtermap: [{parentType: 'predicateobjectmap', inputName: 'graphmap', inputKind: 'statement'}]
+		  };
+
+		  function getStatementTargetConnection(parentBlock, inputName) {
 		  	var input = parentBlock.getInput(inputName);
-		  	if (!input) {
-		  		return;
+		  	if (!input || !input.connection) {
+		  		return null;
 		  	}
 
-		  	var inputConnection = input.connection;
-		  	var lastBlock = inputConnection.targetBlock();
+		  	var lastBlock = input.connection.targetBlock();
 		  	while (lastBlock && lastBlock.getNextBlock()) {
 		  		lastBlock = lastBlock.getNextBlock();
 		  	}
 
-		  	var targetConnection = lastBlock ? lastBlock.nextConnection : inputConnection;
-		  	if (targetConnection && childBlock.previousConnection &&
-		  		targetConnection.checkType_(childBlock.previousConnection)) {
-		  		if (childBlock.previousConnection.isConnected()) {
-		  			childBlock.previousConnection.disconnect();
-		  		}
-		  		targetConnection.connect(childBlock.previousConnection);
-		  		enableBlockTree(childBlock);
-		  		parentBlock.render();
+		  	return lastBlock ? lastBlock.nextConnection : input.connection;
+		  }
+
+		  function appendToStatementInput(parentBlock, inputName, childBlock) {
+		  	var targetConnection = getStatementTargetConnection(parentBlock, inputName);
+		  	if (!targetConnection || !childBlock.previousConnection ||
+		  		!targetConnection.checkType_(childBlock.previousConnection)) {
+		  		return false;
 		  	}
+
+		  	if (childBlock.previousConnection.isConnected()) {
+		  		childBlock.previousConnection.disconnect();
+		  	}
+		  	targetConnection.connect(childBlock.previousConnection);
+		  	enableBlockTree(childBlock);
+		  	parentBlock.render();
+		  	return true;
+		  }
+
+		  function connectToValueInput(parentBlock, inputName, childBlock) {
+		  	var input = parentBlock.getInput(inputName);
+		  	if (!input || !input.connection || !childBlock.outputConnection ||
+		  		input.connection.targetBlock() ||
+		  		!input.connection.checkType_(childBlock.outputConnection)) {
+		  		return false;
+		  	}
+
+		  	if (childBlock.outputConnection.isConnected()) {
+		  		childBlock.outputConnection.disconnect();
+		  	}
+		  	input.connection.connect(childBlock.outputConnection);
+		  	enableBlockTree(childBlock);
+		  	parentBlock.render();
+		  	return true;
 		  }
 
 		  function enableBlockTree(block) {
@@ -228,59 +276,145 @@
 		  	}
 		  }
 
-		  function attachTripleMapToMapping(block) {
-		  	if (!block || block.type != 'triplemap' || block.getParent()) {
-		  		return;
+		  function getWorkspaceBlocks() {
+		  	if (workspace.getAllBlocks) {
+		  		return workspace.getAllBlocks();
+		  	}
+		  	var blocks = [];
+		  	for (var blockID in workspace.blockDB_) {
+		  		blocks.push(workspace.blockDB_[blockID]);
+		  	}
+		  	return blocks;
+		  }
+
+		  function getWorkspaceBlockCount() {
+		  	return getWorkspaceBlocks().length;
+		  }
+
+		  function isBlockInsideTree(rootBlock, candidateBlock) {
+		  	var descendants = rootBlock.getDescendants();
+		  	for (var i = 0; i < descendants.length; i++) {
+		  		if (descendants[i] == candidateBlock) {
+		  			return true;
+		  		}
+		  	}
+		  	return false;
+		  }
+
+		  function getConnectionCoordinate(connection, fallbackBlock) {
+		  	if (connection && typeof connection.x_ == 'number' && typeof connection.y_ == 'number') {
+		  		return {x: connection.x_, y: connection.y_};
+		  	}
+		  	var xy = fallbackBlock.getRelativeToSurfaceXY();
+		  	return {x: xy.x, y: xy.y};
+		  }
+
+		  function getPlacementTarget(rule, block, candidateParent) {
+		  	if (rule.inputKind == 'value') {
+		  		var valueInput = candidateParent.getInput(rule.inputName);
+		  		if (!valueInput || !valueInput.connection || valueInput.connection.targetBlock() ||
+		  			!block.outputConnection ||
+		  			!valueInput.connection.checkType_(block.outputConnection)) {
+		  			return null;
+		  		}
+		  		return valueInput.connection;
 		  	}
 
-		  	var mappings = getBlocksByType('mapping');
-		  	if (mappings.length) {
-		  		appendToStatementInput(mappings[0], 'triplesmap', block);
+		  	var statementConnection = getStatementTargetConnection(candidateParent, rule.inputName);
+		  	if (!statementConnection || !block.previousConnection ||
+		  		!statementConnection.checkType_(block.previousConnection)) {
+		  		return null;
+		  	}
+		  	return statementConnection;
+		  }
+
+		  function getPlacementScore(block, targetConnection, ruleIndex) {
+		  	var sourceConnection = block.outputConnection || block.previousConnection;
+		  	var source = getConnectionCoordinate(sourceConnection, block);
+		  	var target = getConnectionCoordinate(targetConnection, targetConnection.getSourceBlock());
+		  	var dx = source.x - target.x;
+		  	var dy = source.y - target.y;
+		  	return (ruleIndex * 1000000) + (dx * dx) + (dy * dy);
+		  }
+
+		  function findBestPlacement(block) {
+		  	var rules = autoConnectRules[block.type];
+		  	if (!rules) {
+		  		return null;
+		  	}
+
+		  	var blocks = getWorkspaceBlocks();
+		  	var bestPlacement = null;
+		  	for (var ruleIndex = 0; ruleIndex < rules.length; ruleIndex++) {
+		  		var rule = rules[ruleIndex];
+		  		for (var blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+		  			var candidateParent = blocks[blockIndex];
+		  			if (!candidateParent || candidateParent.type != rule.parentType ||
+		  				candidateParent.isInFlyout || isBlockInsideTree(block, candidateParent)) {
+		  				continue;
+		  			}
+
+		  			var targetConnection = getPlacementTarget(rule, block, candidateParent);
+		  			if (!targetConnection) {
+		  				continue;
+		  			}
+
+		  			var score = getPlacementScore(block, targetConnection, ruleIndex);
+		  			if (!bestPlacement || score < bestPlacement.score) {
+		  				bestPlacement = {
+		  					rule: rule,
+		  					parentBlock: candidateParent,
+		  					score: score
+		  				};
+		  			}
+		  		}
+		  	}
+
+		  	return bestPlacement;
+		  }
+
+		  function moveStandaloneBlockIntoView(block) {
+		  	var xy = block.getRelativeToSurfaceXY();
+		  	if (xy.x < 120 || xy.y < 40) {
+		  		block.moveBy(180 - xy.x, 120 - xy.y);
 		  	}
 		  }
 
-		  function attachPredicateObjectMapToTripleMap(block) {
-		  	if (!block || block.type != 'predicateobjectmap' || block.getParent()) {
-		  		return;
+		  function placeAddedBlock(block) {
+		  	if (!block || block.workspace != workspace || block.isInFlyout || block.getParent()) {
+		  		return false;
 		  	}
 
-		  	var tripleMap = Blockly.selected && getTripleMap(Blockly.selected);
-		  	if (!tripleMap) {
-		  		var tripleMaps = getBlocksByType('triplemap');
-		  		tripleMap = tripleMaps.length && tripleMaps[0];
+		  	var placement = findBestPlacement(block);
+		  	if (placement) {
+		  		if (placement.rule.inputKind == 'value') {
+		  			return connectToValueInput(placement.parentBlock, placement.rule.inputName, block);
+		  		}
+		  		return appendToStatementInput(placement.parentBlock, placement.rule.inputName, block);
 		  	}
 
-		  	if (tripleMap) {
-		  		appendToStatementInput(tripleMap, 'predicateobjectmap', block);
-		  	}
+		  	enableBlockTree(block);
+		  	moveStandaloneBlockIntoView(block);
+		  	return false;
 		  }
 
-		  function placeTemplateBlock(block) {
-		  	attachTripleMapToMapping(block);
-		  	attachPredicateObjectMapToTripleMap(block);
-		  	if (!block.getParent()) {
-		  		enableBlockTree(block);
-		  		block.moveBy(180, 120);
-		  	}
-		  }
-
-		  function attachWhenDragEnds(blockId, attempts) {
+		  function placeWhenDragEnds(blockId, attempts) {
 		  	if (attempts > 40) {
 		  		return;
 		  	}
 		  	if (Blockly.dragMode_ != Blockly.DRAG_NONE) {
 		  		setTimeout(function() {
-		  			attachWhenDragEnds(blockId, attempts + 1);
+		  			placeWhenDragEnds(blockId, attempts + 1);
 		  		}, 50);
 		  		return;
 		  	}
 
-		  	attachTripleMapToMapping(workspace.getBlockById(blockId));
+		  	placeAddedBlock(workspace.getBlockById(blockId));
 		  }
 
-		  function attachDroppedTripleMap(event) {
-		  	if (event.type == Blockly.Events.CREATE || event.type == Blockly.Events.MOVE) {
-		  		attachWhenDragEnds(event.blockId, 0);
+		  function placeCreatedBlock(event) {
+		  	if (event.type == Blockly.Events.CREATE) {
+		  		placeWhenDragEnds(event.blockId, 0);
 		  	}
 		  }
 
@@ -314,45 +448,62 @@
 		  	return null;
 		  }
 
-		  function cloneTemplateBlock(templateBlock) {
-		  	var xml = Blockly.Xml.blockToDom(templateBlock);
+		  function moveBlockNearClientPosition(block, clientX, clientY) {
+		  	if (typeof clientX != 'number' || typeof clientY != 'number' ||
+		  		!workspace.getParentSvg || !Blockly.mouseToSvg) {
+		  		return;
+		  	}
+
+		  	var inverseScreenCTM = workspace.getInverseScreenCTM && workspace.getInverseScreenCTM();
+		  	var point = Blockly.mouseToSvg({clientX: clientX, clientY: clientY}, workspace.getParentSvg(), inverseScreenCTM);
+		  	point.x = point.x / workspace.scale;
+		  	point.y = point.y / workspace.scale;
+
+		  	var xy = block.getRelativeToSurfaceXY();
+		  	block.moveBy(point.x - xy.x, point.y - xy.y);
+		  }
+
+		  function cloneFlyoutBlock(flyoutBlock, clientX, clientY) {
+		  	var xml = Blockly.Xml.blockToDom(flyoutBlock);
 		  	Blockly.Xml.deleteNext(xml);
 		  	var block = Blockly.Xml.domToBlock(xml, workspace);
-		  	block.initSvg();
-		  	block.render();
-		  	placeTemplateBlock(block);
+		  	moveBlockNearClientPosition(block, clientX, clientY);
+		  	placeAddedBlock(block);
+		  	generateCode();
 		  	return block;
 		  }
 
-		  function installTemplateFallback() {
+		  function installFlyoutBlockFallback() {
 		  	var flyout = workspace.toolbox_ && workspace.toolbox_.flyout_;
 		  	if (!flyout || !flyout.svgGroup_) {
 		  		return;
 		  	}
 
-		  	var pendingTemplate = null;
+		  	var pendingFlyoutBlock = null;
 		  	var blockCountBefore = 0;
 		  	flyout.svgGroup_.addEventListener('mousedown', function(event) {
 		  		var block = getFlyoutTopBlockFromEvent(event);
-		  		if (!block || (block.type != 'triplemap' && block.type != 'predicateobjectmap')) {
+		  		if (!block) {
 		  			return;
 		  		}
 
-		  		pendingTemplate = block;
-		  		blockCountBefore = getBlocksByType(block.type).length;
+		  		pendingFlyoutBlock = block;
+		  		blockCountBefore = getWorkspaceBlockCount();
 		  	}, true);
 
-		  	document.addEventListener('mouseup', function() {
-		  		if (!pendingTemplate) {
+		  	document.addEventListener('mouseup', function(event) {
+		  		if (!pendingFlyoutBlock) {
 		  			return;
 		  		}
 
-		  		var templateBlock = pendingTemplate;
+		  		var flyoutBlock = pendingFlyoutBlock;
 		  		var previousCount = blockCountBefore;
-		  		pendingTemplate = null;
+		  		var clientX = event.clientX;
+		  		var clientY = event.clientY;
+		  		pendingFlyoutBlock = null;
 		  		setTimeout(function() {
-		  			if (getBlocksByType(templateBlock.type).length == previousCount) {
-		  				cloneTemplateBlock(templateBlock);
+		  			if (getWorkspaceBlockCount() == previousCount) {
+		  				cloneFlyoutBlock(flyoutBlock, clientX, clientY);
 		  			}
 		  		}, 100);
 		  	}, true);
@@ -363,8 +514,8 @@
 		  	document.getElementById('code').value = code;
 		  }
 		  
-		  installTemplateFallback();
-		  workspace.addChangeListener(attachDroppedTripleMap);
+		  installFlyoutBlockFallback();
+		  workspace.addChangeListener(placeCreatedBlock);
 		  workspace.addChangeListener(generateCode);
 
 		  $('.nav-tabs a').on('click', function(event){

@@ -324,7 +324,7 @@ function termmap(block) {
     code += " \"" + block.getFieldValue('TERMMAPVALUE') + "\";\n";
   } 
 
-  if(block.type == 'predicatemap'){
+  if(block.type == 'predicatemap' && !block.getInputTargetBlock('termmap')){
     code += '  rr:termType rr:IRI;\n';
   }
 
@@ -354,4 +354,3 @@ R2RML.objecttermtype = function(block) {
 R2RML.objecttermmap = function(block) {
   return termmap(block);
 };
-

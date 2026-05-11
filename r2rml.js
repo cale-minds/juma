@@ -295,9 +295,10 @@ Blockly.Blocks['predicateobjectmap'] = {
 
 Blockly.Blocks['predicatemap'] = {
     init: function() {
-    this.appendDummyInput('termmap')
+    this.appendStatementInput('termmap')
         .appendField(new Blockly.FieldDropdown([['constant', 'CONSTANT'], ['column', 'COLUMN'], ['template', 'TEMPLATE']]), 'TERMMAP')
-        .appendField(new Blockly.FieldTextInput('insert value'), 'TERMMAPVALUE');
+        .appendField(new Blockly.FieldTextInput('insert value'), 'TERMMAPVALUE')
+        .setCheck(['predicatetermtype']);
     this.setColour(predicateColour);
     this.setPreviousStatement(true, ['predicatemap']);
     this.setNextStatement(true, ['predicatemap']);
@@ -380,8 +381,8 @@ Blockly.Blocks['predicatetermtype'] = {
         .appendField('Term type')
         .appendField(new Blockly.FieldDropdown([['iri', 'termtypeiri']]), 'TERMTYPE');
     this.setColour(predicateColour);
-    this.setPreviousStatement(true, ['predicatetermmap']);
-    // this.setNextStatement(true, ['predicatetermtype', 'predicatetermmap']); // TODO review this
+    this.setPreviousStatement(true, ['predicatetermtype']);
+    this.setNextStatement(true, ['predicatetermtype']);
     this.setTooltip('Defines a term type.');
     this.setHelpUrl('https://www.w3.org/ns/r2rml#termType');
   }
