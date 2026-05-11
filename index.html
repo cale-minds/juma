@@ -42,19 +42,60 @@
 				fill: #f00 ;
 			}
 
-			.nav-tabs {
+			.app-header {
+				align-items: stretch;
 				background: #ffffff;
 				border-bottom: 1px solid #dfe5ee;
 				box-shadow: 0 1px 4px rgba(31, 41, 55, 0.08);
-				padding: 0 16px;
+				display: flex;
+				flex: 0 0 auto;
+				padding: 0 20px;
+			}
+
+			.app-brand {
+				align-items: center;
+				color: #102a43;
+				display: inline-flex;
+				flex: 0 0 auto;
+				font-size: 21px;
+				font-weight: 700;
+				gap: 10px;
+				letter-spacing: 0;
+				padding: 0 28px 0 0;
+			}
+
+			.nav-tabs {
+				align-items: stretch;
+				background: transparent;
+				border-bottom: 0;
+				box-shadow: none;
+				display: flex;
+				flex: 1 1 auto;
+				margin-bottom: 0;
+				padding: 0;
 			}
 
 			.nav-tabs > li > a {
+				align-items: center;
 				border-radius: 0;
 				color: #455a64;
+				display: inline-flex;
 				font-weight: 500;
+				gap: 8px;
 				margin-right: 8px;
 				padding: 14px 16px;
+			}
+
+			.juma-paw-logo {
+				display: inline-flex;
+				height: 34px;
+				width: 34px;
+			}
+
+			.juma-paw-logo svg {
+				display: block;
+				height: 100%;
+				width: 100%;
 			}
 
 			.nav-tabs > li.active > a,
@@ -293,19 +334,59 @@
 				color: #ffffff;
 			}
 
+			.app-footer {
+				align-items: center;
+				background: #ffffff;
+				border-top: 1px solid #dfe5ee;
+				box-shadow: 0 -1px 4px rgba(31, 41, 55, 0.06);
+				color: #607d8b;
+				display: flex;
+				flex: 0 0 auto;
+				flex-wrap: wrap;
+				font-size: 13px;
+				gap: 8px;
+				justify-content: center;
+				line-height: 1.4;
+				padding: 8px 16px;
+				text-align: center;
+			}
+
+			.app-footer strong {
+				color: #263238;
+				font-weight: 600;
+			}
+
+			.app-footer .footer-divider {
+				color: #b0bec5;
+			}
+
 			@media (max-width: 900px) {
 				body {
 					overflow: auto;
 				}
 
+				.app-header {
+					align-items: flex-start;
+					flex-direction: column;
+					padding: 0 12px;
+				}
+
+				.app-brand {
+					padding: 10px 4px 0;
+				}
+
+				.nav-tabs {
+					width: 100%;
+				}
+
 				.tab-content,
 				.tab-pane {
 					height: auto;
-					min-height: calc(100vh - 49px);
+					min-height: calc(100vh - 96px);
 				}
 
 				.r2rml-mapping-pane {
-					min-height: calc(100vh - 49px);
+					min-height: calc(100vh - 96px);
 					padding: 12px;
 				}
 
@@ -330,14 +411,30 @@
 				.autosave-status {
 					margin-left: 0;
 				}
+
+				.app-footer {
+					align-items: center;
+					flex-direction: column;
+					gap: 2px;
+				}
+
+				.app-footer .footer-divider {
+					display: none;
+				}
 			}
 		</style>
 	</head>
 	<body>
-	<ul class="nav nav-tabs" role="tablist">
-		<li role="presentation" class="active"><a href="#tab1" aria-controls="tab1" role="tab" data-toggle="tab">Mapping</a></li>
-		<li role="presentation"><a href="#tab2" aria-controls="tab2" role="tab" data-toggle="tab">R2RML-Mapping</a></li>
-	</ul>
+	<header class="app-header">
+		<div class="app-brand" aria-label="Juma">
+			<span class="juma-paw-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img" focusable="false"><defs><radialGradient id="jumaJaguarGold" cx="32%" cy="24%" r="74%"><stop offset="0" stop-color="#ffe28a"></stop><stop offset="0.58" stop-color="#f6a62f"></stop><stop offset="1" stop-color="#d97918"></stop></radialGradient><filter id="jumaPawShadow" x="-16%" y="-16%" width="132%" height="132%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.3" flood-color="#0f172a" flood-opacity="0.22"></feDropShadow></filter></defs><circle cx="32" cy="32" r="29" fill="#123047"></circle><circle cx="32" cy="32" r="25.5" fill="url(#jumaJaguarGold)" filter="url(#jumaPawShadow)"></circle><ellipse cx="17.5" cy="29.2" rx="6.2" ry="8.8" transform="rotate(-17 17.5 29.2)" fill="#211915"></ellipse><ellipse cx="27.2" cy="19.8" rx="6.6" ry="9.4" transform="rotate(-6 27.2 19.8)" fill="#211915"></ellipse><ellipse cx="38.2" cy="19.8" rx="6.6" ry="9.4" transform="rotate(6 38.2 19.8)" fill="#211915"></ellipse><ellipse cx="47.4" cy="29.2" rx="6.2" ry="8.8" transform="rotate(17 47.4 29.2)" fill="#211915"></ellipse><path d="M32.2 31.8c5 0 14.4 9.4 14.4 15.7 0 4.6-3.8 7.2-9.2 6.4-2-.3-3.4-.9-5.2-.9-1.9 0-3.3.6-5.3.9-5.4.8-9.2-1.8-9.2-6.4 0-6.3 9.4-15.7 14.5-15.7z" fill="#211915"></path><path d="M25.2 43.5c2.1-3.8 4.8-6.2 7-6.2 2.4 0 5.1 2.5 7.2 6.4" fill="none" stroke="#3a2a1d" stroke-width="1.4" stroke-linecap="round" opacity="0.38"></path></svg></span>
+			<span>Juma</span>
+		</div>
+		<ul class="nav nav-tabs" role="tablist">
+			<li role="presentation" class="active"><a href="#tab1" aria-controls="tab1" role="tab" data-toggle="tab">Mapping</a></li>
+			<li role="presentation"><a href="#tab2" aria-controls="tab2" role="tab" data-toggle="tab">R2RML-Mapping</a></li>
+		</ul>
+	</header>
 
 	<div class="tab-content">
 		<div role="tabpanel" class="tab-pane active" id="tab1">
@@ -400,9 +497,17 @@
 					</div>
 					</div>
 				</div>
-			</div>
+		</div>
 	    </div>
 	</div>
+
+	<footer class="app-footer">
+		<span><strong>Upgrade Juma 2.0</strong></span>
+		<span class="footer-divider">|</span>
+		<span>Original creator: Ademar Crotti Junior</span>
+		<span class="footer-divider">|</span>
+		<span>New features and enhancements: Felipe Calé</span>
+	</footer>
 		<xml id="toolbox" style="display: none">  
 		  <category name="Templates" colour="360">
 			<block type="triplemap">
