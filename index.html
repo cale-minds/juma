@@ -27,6 +27,28 @@
 			body .blocklyIconShape {
 				fill: #f00 ;
 			}
+
+			.r2rml-export-pane {
+				padding: 16px;
+			}
+
+			.r2rml-export-pane > .row {
+				margin-left: 0;
+				margin-right: 0;
+			}
+
+			.r2rml-export-pane > .row > .col-md-12 {
+				padding-left: 0;
+				padding-right: 0;
+			}
+
+			.r2rml-export-toolbar {
+				margin-bottom: 12px;
+			}
+
+			.r2rml-export-toolbar .form-group {
+				margin-right: 6px;
+			}
 		</style>
 	</head>
 	<body>
@@ -57,11 +79,19 @@
 		</div>
 	
 		<div role="tabpanel" class="tab-pane" id="tab2">
-	    	<div class="row">
-			  	<br />
-				<div class="col-md-12">
+			<div class="r2rml-export-pane">
+				<div class="row">
+					<div class="col-md-12">
+					<div class="form-inline r2rml-export-toolbar">
+						<div class="form-group">
+							<label class="sr-only" for="exportFileName">File name</label>
+							<input id="exportFileName" type="text" class="form-control" placeholder="file name" />
+						</div>
+						<button id="exportR2RML" type="button" class="btn btn-default">Export .ttl</button>
+					</div>
 					<div class="panel panel-info">
 						<textarea id="code" class="form-control" rows="20" readonly="readonly"></textarea>
+					</div>
 					</div>
 				</div>
 			</div>
@@ -638,10 +668,67 @@
 		  	var code = R2RML.workspaceToCode(workspace);
 		  	document.getElementById('code').value = code;
 		  }
+
+		  function getExportFileName() {
+		  	var fileName = ($('#exportFileName').val() || '').replace(/^\s+|\s+$/g, '');
+		  	if (!fileName) {
+		  		alert('Enter a file name before exporting.');
+		  		$('#exportFileName').focus();
+		  		return null;
+		  	}
+
+		  	fileName = fileName.replace(/[\\\/:*?"<>|]+/g, '_')
+		  		.replace(/^\.+/, '')
+		  		.replace(/\.+$/, '');
+		  	if (!fileName) {
+		  		alert('Enter a valid file name before exporting.');
+		  		$('#exportFileName').focus();
+		  		return null;
+		  	}
+
+		  	if (!/\.ttl$/i.test(fileName)) {
+		  		fileName += '.ttl';
+		  	}
+		  	return fileName;
+		  }
+
+		  function exportGeneratedR2RML() {
+		  	generateCode();
+		  	var fileName = getExportFileName();
+		  	if (!fileName) {
+		  		return;
+		  	}
+
+		  	var code = document.getElementById('code').value;
+		  	var blob = new Blob([code], {type: 'text/turtle;charset=utf-8'});
+		  	if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+		  		window.navigator.msSaveOrOpenBlob(blob, fileName);
+		  		return;
+		  	}
+
+		  	var url = window.URL.createObjectURL(blob);
+		  	var link = document.createElement('a');
+		  	link.href = url;
+		  	link.download = fileName;
+		  	document.body.appendChild(link);
+		  	link.click();
+		  	document.body.removeChild(link);
+		  	setTimeout(function() {
+		  		window.URL.revokeObjectURL(url);
+		  	}, 0);
+		  }
 		  
 		  installFlyoutBlockFallback();
 		  workspace.addChangeListener(placeCreatedBlock);
 		  workspace.addChangeListener(generateCode);
+
+		  $('#exportR2RML').on('click', exportGeneratedR2RML);
+		  $('#exportFileName').on('keydown', function(event) {
+		  	if (event.keyCode == 13) {
+		  		event.preventDefault();
+		  		exportGeneratedR2RML();
+		  	}
+		  });
 
 		  $('.nav-tabs a').on('click', function(event){
 				var x = $(event.target).text();         // active tab
