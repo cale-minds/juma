@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <script src="jquery-2.1.4.min.js"></script>
+		<script src="bootstrap.min.js"></script>
+
+	    <!-- Blockly core imports -->
+		<script src="blockly_compressed.js"></script>
+		<script src="blocks_compressed.js"></script>
+		<script src="en.js"></script>
+
+		<!-- R2RML Blockly -->
+		<script src="r2rml.js"></script>
+		<script src="r2rml_generator.js"></script>
+		
+		<link rel="stylesheet" type="text/css" href="bootstrap-theme.min.css">
+		<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+
+		<style type="text/css">
+			.hideInput {
+				display: none;
+			}
+
+			.wow {font-style: italic;}
+
+			body .blocklyIconShape {
+				fill: #f00 ;
+			}
+		</style>
+	</head>
+	<body>
+	<ul class="nav nav-tabs" role="tablist">
+		<li role="presentation" class="active"><a href="#tab1" aria-controls="tab1" role="tab" data-toggle="tab">Mapping</a></li>
+		<li role="presentation"><a href="#tab2" aria-controls="tab2" role="tab" data-toggle="tab">R2RML-Mapping</a></li>
+	</ul>
+
+	<div class="tab-content">
+		<div role="tabpanel" class="tab-pane active" id="tab1">
+			<div class="row">
+				<br />
+				<div class="col-md-9">
+					<div class="panel panel-info">
+						<div id="blocklyDiv" style="height: calc(100vh - 290px);"></div>
+			    	</div>
+				</div>
+				<div id="edit" class="col-md-3" style="display:none;">
+					<div class="panel panel-info">
+					<div class="panel-heading">Table name or SQL query</div>
+					<div class="panel panel-info">
+						<textarea id="content" class="form-control" rows="3"></textarea>
+					</div>
+					<button id="saveLogicalTable" class="btn btn-default">OK</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+		<div role="tabpanel" class="tab-pane" id="tab2">
+	    	<div class="row">
+			  	<br />
+				<div class="col-md-12">
+					<div class="panel panel-info">
+						<textarea id="code" class="form-control" rows="20" readonly="readonly"></textarea>
+					</div>
+				</div>
+			</div>
+	    </div>
+	</div>
+		<xml id="toolbox" style="display: none">  
+		  <category name="Templates" colour="360">
+			<block type="triplemap">
+				<statement name="logicaltable">
+		    		<block type="tablesqlquery"></block>
+		    	</statement>
+		    	<statement name="subjectmap">
+			    	<block type="subjectmap">
+	    				<field name="TERMMAP">TEMPLATE</field>
+			    	</block>
+			    </statement>
+				<statement name="predicateobjectmap">
+					<block type="predicateobjectmap">
+						<statement name="ppredicateobjectmap">
+							<block type="predicatemap"></block>
+						</statement>
+						<statement name="opredicateobjectmap">
+							<block type="objectmap">
+								<field name="TERMMAP">COLUMN</field>
+							</block>
+						</statement>
+					</block>
+				</statement>	
+			</block>
+			<block type="predicateobjectmap">
+				<statement name="ppredicateobjectmap">
+					<block type="predicatemap"></block>
+				</statement>
+				<statement name="opredicateobjectmap">
+					<block type="objectmap">
+						<field name="TERMMAP">COLUMN</field>
+					</block>
+				</statement>
+			</block>
+		  </category>
+		  <category name="Prefixes" colour="62">
+		    <block type="predefinedprefix"></block>
+		    <block type="prefix"></block>
+		    <block type="base"></block>
+		  </category>
+			<category name="Triple Map" colour="200">
+		    <block type="triplemap"></block>
+			  <category name="Logical Table" colour="85">
+			    <block type="tablesqlquery"></block>
+			  </category>
+			  <category name="Subject" colour="122">
+			    <block type="subjectmap">
+					<field name="TERMMAP">TEMPLATE</field>
+			    </block>
+			    <block type="class"></block>
+			    <block type="subjecttermtype"></block>
+			    <block type="subjectgraphtermap"></block>
+			  </category>
+			  <category name="Predicate Object" colour="62">		  
+				<block type="predicateobjectmap"></block>	
+				<category name="Predicate" colour="215">    
+					<block type="predicatemap"></block>
+				</category>
+			     <block type="predicatetermtype"></block>
+			    <category name="Object" colour="170">
+				    <block type="objectmap">
+				    	<field name="TERMMAP">COLUMN</field>
+				    </block>
+				 	<block type="objecttermtype">
+				  		<field name="TERMTYPE">termtypeliteral</field>
+				  	</block>
+				    <block type="objectdatatype"></block>
+				    <block type="objectlanguage"></block>
+						<block type="parenttriplesmap"></block>
+					  <block type="joincondition"></block>
+				</category>
+				<category name="Graph" colour="320">
+						<block type="predicategraphtermap"></block>
+				  </category>
+			  </category>
+		  </category>
+		</xml>
+
+		<xml id="startBlocks" style="display:none">
+			<block type="mapping" x="9" y="3">
+		    </block>
+		</xml>
+		
+		<!-- <xml id="startBlocks" style="display:none">
+			<block type="mapping" x="9" y="3">
+				<statement name="mapping">
+					<block type="prefix"></block>
+				</statement>
+				<statement name="triplesmap">
+					<block type="triplemap">
+						<statement name="logicaltable">
+							<block type="tablesqlquery"></block>
+						</statement>
+				    	<statement name="subjectmap">
+					    	<block type="subjectmap">
+					    		<field name="TERMMAP">TEMPLATE</field>
+					    	</block>
+					    </statement>
+						<statement name="predicateobjectmap">
+							<block type="predicateobjectmap">
+								<statement name="ppredicateobjectmap">
+									<block type="predicatemap"></block>
+								</statement>
+								<statement name="opredicateobjectmap">
+									<block type="objectmap">
+										<field name="TERMMAP">COLUMN</field>
+									</block>
+								</statement>
+							</block>
+						</statement>	
+	    			</block>
+	    		</statement>
+		    </block>
+		</xml> -->
+
+		<script>
+		var workspace = Blockly.inject('blocklyDiv', 
+		  {toolbox: document.getElementById('toolbox'), 
+		  	zoom:
+	         {controls: true,
+	          wheel: true,
+	          startScale: 0.8,
+	          maxScale: 3,
+	          minScale: 0.3,
+	          scaleSpeed: 1.1},
+	     		trashcan: true,
+	     		sounds: false});
+
+		  Blockly.Xml.domToWorkspace(document.getElementById('startBlocks'), Blockly.mainWorkspace);
+
+		  function appendToStatementInput(parentBlock, inputName, childBlock) {
+		  	var input = parentBlock.getInput(inputName);
+		  	if (!input) {
+		  		return;
+		  	}
+
+		  	var inputConnection = input.connection;
+		  	var lastBlock = inputConnection.targetBlock();
+		  	while (lastBlock && lastBlock.getNextBlock()) {
+		  		lastBlock = lastBlock.getNextBlock();
+		  	}
+
+		  	var targetConnection = lastBlock ? lastBlock.nextConnection : inputConnection;
+		  	if (targetConnection && childBlock.previousConnection &&
+		  		targetConnection.checkType_(childBlock.previousConnection)) {
+		  		if (childBlock.previousConnection.isConnected()) {
+		  			childBlock.previousConnection.disconnect();
+		  		}
+		  		targetConnection.connect(childBlock.previousConnection);
+		  		enableBlockTree(childBlock);
+		  		parentBlock.render();
+		  	}
+		  }
+
+		  function enableBlockTree(block) {
+		  	var descendants = block.getDescendants();
+		  	for (var i = 0; i < descendants.length; i++) {
+		  		descendants[i].setDisabled(false);
+		  	}
+		  }
+
+		  function attachTripleMapToMapping(block) {
+		  	if (!block || block.type != 'triplemap' || block.getParent()) {
+		  		return;
+		  	}
+
+		  	var mappings = getBlocksByType('mapping');
+		  	if (mappings.length) {
+		  		appendToStatementInput(mappings[0], 'triplesmap', block);
+		  	}
+		  }
+
+		  function attachPredicateObjectMapToTripleMap(block) {
+		  	if (!block || block.type != 'predicateobjectmap' || block.getParent()) {
+		  		return;
+		  	}
+
+		  	var tripleMap = Blockly.selected && getTripleMap(Blockly.selected);
+		  	if (!tripleMap) {
+		  		var tripleMaps = getBlocksByType('triplemap');
+		  		tripleMap = tripleMaps.length && tripleMaps[0];
+		  	}
+
+		  	if (tripleMap) {
+		  		appendToStatementInput(tripleMap, 'predicateobjectmap', block);
+		  	}
+		  }
+
+		  function placeTemplateBlock(block) {
+		  	attachTripleMapToMapping(block);
+		  	attachPredicateObjectMapToTripleMap(block);
+		  	if (!block.getParent()) {
+		  		enableBlockTree(block);
+		  		block.moveBy(180, 120);
+		  	}
+		  }
+
+		  function attachWhenDragEnds(blockId, attempts) {
+		  	if (attempts > 40) {
+		  		return;
+		  	}
+		  	if (Blockly.dragMode_ != Blockly.DRAG_NONE) {
+		  		setTimeout(function() {
+		  			attachWhenDragEnds(blockId, attempts + 1);
+		  		}, 50);
+		  		return;
+		  	}
+
+		  	attachTripleMapToMapping(workspace.getBlockById(blockId));
+		  }
+
+		  function attachDroppedTripleMap(event) {
+		  	if (event.type == Blockly.Events.CREATE || event.type == Blockly.Events.MOVE) {
+		  		attachWhenDragEnds(event.blockId, 0);
+		  	}
+		  }
+
+		  function getFlyoutTopBlockFromEvent(event) {
+		  	var flyout = workspace.toolbox_ && workspace.toolbox_.flyout_;
+		  	if (!flyout || !flyout.workspace_) {
+		  		return null;
+		  	}
+
+		  	var topBlocks = flyout.workspace_.getTopBlocks(false);
+		  	for (var i = 0; i < topBlocks.length; i++) {
+		  		var svgRoot = topBlocks[i].getSvgRoot();
+		  		if (svgRoot && svgRoot.contains(event.target)) {
+		  			return topBlocks[i];
+		  		}
+		  	}
+
+		  	for (var j = 0; j < topBlocks.length; j++) {
+		  		var blockRoot = topBlocks[j].getSvgRoot();
+		  		if (!blockRoot || !blockRoot.getBoundingClientRect) {
+		  			continue;
+		  		}
+
+		  		var rect = blockRoot.getBoundingClientRect();
+		  		if (event.clientX >= rect.left && event.clientX <= rect.right &&
+		  			event.clientY >= rect.top && event.clientY <= rect.bottom) {
+		  			return topBlocks[j];
+		  		}
+		  	}
+
+		  	return null;
+		  }
+
+		  function cloneTemplateBlock(templateBlock) {
+		  	var xml = Blockly.Xml.blockToDom(templateBlock);
+		  	Blockly.Xml.deleteNext(xml);
+		  	var block = Blockly.Xml.domToBlock(xml, workspace);
+		  	block.initSvg();
+		  	block.render();
+		  	placeTemplateBlock(block);
+		  	return block;
+		  }
+
+		  function installTemplateFallback() {
+		  	var flyout = workspace.toolbox_ && workspace.toolbox_.flyout_;
+		  	if (!flyout || !flyout.svgGroup_) {
+		  		return;
+		  	}
+
+		  	var pendingTemplate = null;
+		  	var blockCountBefore = 0;
+		  	flyout.svgGroup_.addEventListener('mousedown', function(event) {
+		  		var block = getFlyoutTopBlockFromEvent(event);
+		  		if (!block || (block.type != 'triplemap' && block.type != 'predicateobjectmap')) {
+		  			return;
+		  		}
+
+		  		pendingTemplate = block;
+		  		blockCountBefore = getBlocksByType(block.type).length;
+		  	}, true);
+
+		  	document.addEventListener('mouseup', function() {
+		  		if (!pendingTemplate) {
+		  			return;
+		  		}
+
+		  		var templateBlock = pendingTemplate;
+		  		var previousCount = blockCountBefore;
+		  		pendingTemplate = null;
+		  		setTimeout(function() {
+		  			if (getBlocksByType(templateBlock.type).length == previousCount) {
+		  				cloneTemplateBlock(templateBlock);
+		  			}
+		  		}, 100);
+		  	}, true);
+		  }
+
+		  function generateCode(event) {
+		  	var code = R2RML.workspaceToCode(workspace);
+		  	document.getElementById('code').value = code;
+		  }
+		  
+		  installTemplateFallback();
+		  workspace.addChangeListener(attachDroppedTripleMap);
+		  workspace.addChangeListener(generateCode);
+
+		  $('.nav-tabs a').on('click', function(event){
+				var x = $(event.target).text();         // active tab
+				if(x != 'Mapping') {
+					$('.blocklyToolboxDiv').hide();
+				} else {
+					$('.blocklyToolboxDiv').show();
+				}
+			});
+		</script>
+
+	</body>
+</html>
