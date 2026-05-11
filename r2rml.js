@@ -167,6 +167,9 @@ $(document).ready(function() {
       block.setFieldValue(content.substring(0,20) + (content.length > 20 ? '...' : ''), 'sql');
       blockId = undefined;
       $('#edit').hide();
+      if (typeof generateCode == 'function') {
+        generateCode();
+      }
     }
   });
 });

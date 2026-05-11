@@ -28,6 +28,24 @@
 				fill: #f00 ;
 			}
 
+			.r2rml-mapping-pane {
+				padding: 16px;
+			}
+
+			.r2rml-mapping-pane > .row {
+				margin-left: 0;
+				margin-right: 0;
+			}
+
+			.r2rml-mapping-pane > .row > .col-md-9 {
+				padding-left: 0;
+				padding-right: 0;
+			}
+
+			.r2rml-mapping-pane > .row > .col-md-3 {
+				padding-right: 0;
+			}
+
 			.r2rml-export-pane {
 				padding: 16px;
 			}
@@ -49,6 +67,34 @@
 			.r2rml-export-toolbar .form-group {
 				margin-right: 6px;
 			}
+
+			.mapping-toolbar {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				padding: 0 0 12px;
+			}
+
+			.mapping-toolbar .btn {
+				margin-right: 4px;
+				margin-bottom: 6px;
+			}
+
+			.mapping-toolbar .checkbox {
+				margin-left: 8px;
+				margin-right: 8px;
+			}
+
+			.storage-status {
+				color: #777;
+				display: inline-block;
+				margin-left: 4px;
+			}
+
+			.mapping-workspace {
+				height: calc(100vh - 320px);
+				min-height: 420px;
+			}
 		</style>
 	</head>
 	<body>
@@ -59,20 +105,32 @@
 
 	<div class="tab-content">
 		<div role="tabpanel" class="tab-pane active" id="tab1">
-			<div class="row">
-				<br />
-				<div class="col-md-9">
-					<div class="panel panel-info">
-						<div id="blocklyDiv" style="height: calc(100vh - 290px);"></div>
-			    	</div>
-				</div>
-				<div id="edit" class="col-md-3" style="display:none;">
-					<div class="panel panel-info">
-					<div class="panel-heading">Table name or SQL query</div>
-					<div class="panel panel-info">
-						<textarea id="content" class="form-control" rows="3"></textarea>
+			<div class="r2rml-mapping-pane">
+				<div class="row">
+					<div class="col-md-9">
+						<div class="mapping-toolbar">
+							<button id="loadTtlButton" type="button" class="btn btn-default">Load TTL</button>
+							<input id="loadTtlFile" type="file" accept=".ttl,text/turtle,text/plain" style="display:none;" />
+							<button id="saveWorkspace" type="button" class="btn btn-default">Save</button>
+							<button id="undoWorkspace" type="button" class="btn btn-default">Undo</button>
+							<button id="clearWorkspace" type="button" class="btn btn-default">Clear</button>
+							<label class="checkbox-inline">
+								<input id="autosaveToggle" type="checkbox" /> Autosave
+							</label>
+							<span id="storageStatus" class="storage-status"></span>
+						</div>
+						<div class="panel panel-info">
+							<div id="blocklyDiv" class="mapping-workspace"></div>
+						</div>
 					</div>
-					<button id="saveLogicalTable" class="btn btn-default">OK</button>
+					<div id="edit" class="col-md-3" style="display:none;">
+						<div class="panel panel-info">
+						<div class="panel-heading">Table name or SQL query</div>
+						<div class="panel panel-info">
+							<textarea id="content" class="form-control" rows="3"></textarea>
+						</div>
+						<button id="saveLogicalTable" class="btn btn-default">OK</button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -225,7 +283,14 @@
 	     		trashcan: true,
 	     		sounds: false});
 
-		  Blockly.Xml.domToWorkspace(document.getElementById('startBlocks'), Blockly.mainWorkspace);
+      var STORAGE_KEYS = {
+        draftXml: 'juma.r2rml.workspace.draftXml',
+        savedXml: 'juma.r2rml.workspace.savedXml',
+        code: 'juma.r2rml.generatedCode',
+        autosave: 'juma.r2rml.autosaveEnabled'
+		  };
+		  var autosaveEnabled = true;
+		  var isRestoringWorkspace = false;
 
 		  var autoConnectRules = {
 		  	predefinedprefix: [{parentType: 'mapping', inputName: 'mapping', inputKind: 'statement'}],
@@ -664,9 +729,684 @@
 		  	}, true);
 		  }
 
-		  function generateCode(event) {
-		  	var code = R2RML.workspaceToCode(workspace);
-		  	document.getElementById('code').value = code;
+      function canUseStorage(storage) {
+        try {
+          var testKey = 'juma.r2rml.storage.test';
+          storage.setItem(testKey, testKey);
+          storage.removeItem(testKey);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function getStorageValue(storage, key) {
+        if (!canUseStorage(storage)) {
+          return null;
+        }
+        return storage.getItem(key);
+      }
+
+      function setStorageValue(storage, key, value) {
+        if (!canUseStorage(storage)) {
+          return;
+        }
+        storage.setItem(key, value);
+      }
+
+      function removeStorageValue(storage, key) {
+        if (!canUseStorage(storage)) {
+          return;
+        }
+        storage.removeItem(key);
+      }
+
+      function getSessionValue(key) {
+        return getStorageValue(sessionStorage, key);
+      }
+
+      function setSessionValue(key, value) {
+        setStorageValue(sessionStorage, key, value);
+      }
+
+      function removeSessionValue(key) {
+        removeStorageValue(sessionStorage, key);
+      }
+
+      function getPersistentValue(key) {
+        var sessionValue = getSessionValue(key);
+        if (sessionValue != null) {
+          return sessionValue;
+        }
+        return getStorageValue(localStorage, key);
+      }
+
+      function setPersistentValue(key, value) {
+        setSessionValue(key, value);
+        setStorageValue(localStorage, key, value);
+      }
+
+      function removePersistentValue(key) {
+        removeSessionValue(key);
+        removeStorageValue(localStorage, key);
+      }
+
+      function setStorageStatus(message) {
+        $('#storageStatus').text(message || '');
+      }
+
+      function workspaceToXmlText() {
+        var xml = Blockly.Xml.workspaceToDom(workspace);
+        return Blockly.Xml.domToText(xml);
+      }
+
+      function persistDraftState(force) {
+        if (!force && !autosaveEnabled) {
+          return;
+        }
+        setPersistentValue(STORAGE_KEYS.draftXml, workspaceToXmlText());
+        setPersistentValue(STORAGE_KEYS.code, document.getElementById('code').value || '');
+      }
+
+      function loadStartWorkspace() {
+        isRestoringWorkspace = true;
+        Blockly.Events.disable();
+        try {
+          workspace.clear();
+          Blockly.Xml.domToWorkspace(document.getElementById('startBlocks'), workspace);
+        } finally {
+          Blockly.Events.enable();
+          isRestoringWorkspace = false;
+        }
+        Blockly.svgResize(workspace);
+        generateCode();
+      }
+
+      function loadWorkspaceXmlText(xmlText) {
+        isRestoringWorkspace = true;
+        Blockly.Events.disable();
+        try {
+          workspace.clear();
+          Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(xmlText), workspace);
+        } finally {
+          Blockly.Events.enable();
+          isRestoringWorkspace = false;
+        }
+        Blockly.svgResize(workspace);
+        generateCode();
+      }
+
+      function saveWorkspaceState() {
+        var xmlText = workspaceToXmlText();
+        setPersistentValue(STORAGE_KEYS.savedXml, xmlText);
+        setPersistentValue(STORAGE_KEYS.draftXml, xmlText);
+        setPersistentValue(STORAGE_KEYS.code, document.getElementById('code').value || '');
+        setStorageStatus('Saved');
+      }
+
+      function undoWorkspaceToSavedState() {
+        var savedXml = getPersistentValue(STORAGE_KEYS.savedXml);
+        if (!savedXml) {
+          alert('No saved state found.');
+          return;
+        }
+        loadWorkspaceXmlText(savedXml);
+        persistDraftState(true);
+        setStorageStatus('Restored saved state');
+      }
+
+      function clearWorkspaceState() {
+        if (!confirm('Clear current project?')) {
+          return;
+        }
+        removePersistentValue(STORAGE_KEYS.draftXml);
+        removePersistentValue(STORAGE_KEYS.savedXml);
+        removePersistentValue(STORAGE_KEYS.code);
+        loadStartWorkspace();
+        persistDraftState(true);
+        setStorageStatus('Cleared');
+      }
+
+      function initializeWorkspacePersistence() {
+        var storedAutosave = getPersistentValue(STORAGE_KEYS.autosave);
+        autosaveEnabled = storedAutosave !== 'false';
+        $('#autosaveToggle').prop('checked', autosaveEnabled);
+      }
+
+      function loadInitialWorkspace() {
+        var xmlText = getPersistentValue(STORAGE_KEYS.draftXml) || getPersistentValue(STORAGE_KEYS.savedXml);
+        if (xmlText) {
+          try {
+            loadWorkspaceXmlText(xmlText);
+            setStorageStatus('Saved state restored');
+            return;
+          } catch (e) {
+            removePersistentValue(STORAGE_KEYS.draftXml);
+            removePersistentValue(STORAGE_KEYS.savedXml);
+          }
+        }
+        loadStartWorkspace();
+        persistDraftState(true);
+      }
+
+      function escapeRegex(text) {
+        return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+
+      function unquoteTurtleString(value) {
+        if (!value) {
+          return '';
+        }
+        return value.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+      }
+
+      function matchQuotedProperty(text, propertyName) {
+        var re = new RegExp(escapeRegex(propertyName) + '\\s+(?:"""([\\s\\S]*?)"""|"((?:\\\\.|[^"])*)")\\s*;', 'i');
+        var match = text.match(re);
+        if (!match) {
+          return null;
+        }
+        return unquoteTurtleString(match[1] != null ? match[1] : match[2]);
+      }
+
+      function matchPlainProperty(text, propertyName) {
+        var re = new RegExp(escapeRegex(propertyName) + '\\s+([^;]+)\\s*;', 'i');
+        var match = text.match(re);
+        return match ? match[1].replace(/^\s+|\s+$/g, '') : null;
+      }
+
+      function findMatchingBracket(text, openIndex) {
+        var depth = 0;
+        var quoteMode = null;
+        for (var i = openIndex; i < text.length; i++) {
+          var chunk = text.substring(i, i + 3);
+          var ch = text.charAt(i);
+          if (quoteMode == 'triple') {
+            if (chunk == '"""') {
+              quoteMode = null;
+              i += 2;
+            }
+            continue;
+          }
+          if (quoteMode == 'double') {
+            if (ch == '\\') {
+              i++;
+            } else if (ch == '"') {
+              quoteMode = null;
+            }
+            continue;
+          }
+          if (chunk == '"""') {
+            quoteMode = 'triple';
+            i += 2;
+            continue;
+          }
+          if (ch == '"') {
+            quoteMode = 'double';
+            continue;
+          }
+          if (ch == '[') {
+            depth++;
+          } else if (ch == ']') {
+            depth--;
+            if (depth == 0) {
+              return i;
+            }
+          }
+        }
+        return -1;
+      }
+
+      function extractBracketBlocks(text, propertyName) {
+        var blocks = [];
+        var searchIndex = 0;
+        var marker = propertyName + ' [';
+        while (searchIndex < text.length) {
+          var start = text.indexOf(marker, searchIndex);
+          if (start == -1) {
+            break;
+          }
+          var openIndex = text.indexOf('[', start);
+          var closeIndex = findMatchingBracket(text, openIndex);
+          if (openIndex == -1 || closeIndex == -1) {
+            break;
+          }
+          blocks.push({
+            content: text.substring(openIndex + 1, closeIndex),
+            start: start,
+            end: closeIndex + 1
+          });
+          searchIndex = closeIndex + 1;
+        }
+        return blocks;
+      }
+
+      function parseTermMap(text) {
+        var constant = text.match(/rr:constant\s+([^;]+)\s*;/i);
+        if (constant) {
+          return {kind: 'CONSTANT', value: constant[1].replace(/^\s+|\s+$/g, '')};
+        }
+        var template = matchQuotedProperty(text, 'rr:template');
+        if (template != null) {
+          return {kind: 'TEMPLATE', value: template};
+        }
+        var column = matchQuotedProperty(text, 'rr:column');
+        if (column != null) {
+          return {kind: 'COLUMN', value: column};
+        }
+        return null;
+      }
+
+      function parseTermType(text) {
+        var match = text.match(/rr:termType\s+rr:(IRI|BlankNode|Literal)\s*;/i);
+        if (!match) {
+          return null;
+        }
+        var termType = match[1].toLowerCase();
+        if (termType == 'iri') {
+          return 'termtypeiri';
+        }
+        if (termType == 'blanknode') {
+          return 'termtypeblanknode';
+        }
+        return 'termtypeliteral';
+      }
+
+      function parseGraphMap(text) {
+        return {termMap: parseTermMap(text)};
+      }
+
+      function parseJoinCondition(text) {
+        return {
+          child: matchQuotedProperty(text, 'rr:child') || '',
+          parent: matchQuotedProperty(text, 'rr:parent') || ''
+        };
+      }
+
+      function parseLogicalTable(text) {
+        var tableName = matchQuotedProperty(text, 'rr:tableName');
+        if (tableName != null) {
+          return {type: 'table', value: tableName};
+        }
+        var sqlQuery = matchQuotedProperty(text, 'rr:sqlQuery');
+        if (sqlQuery != null) {
+          return {type: 'sqlquery', value: sqlQuery};
+        }
+        return null;
+      }
+
+      function parseSubjectMap(text) {
+        var classes = [];
+        var classRe = /rr:class\s+([^;]+)\s*;/ig;
+        var classMatch;
+        while ((classMatch = classRe.exec(text)) != null) {
+          classes.push(classMatch[1].replace(/^\s+|\s+$/g, ''));
+        }
+        var graphBlocks = extractBracketBlocks(text, 'rr:graphMap');
+        var graphMaps = [];
+        for (var i = 0; i < graphBlocks.length; i++) {
+          graphMaps.push(parseGraphMap(graphBlocks[i].content));
+        }
+        return {
+          termMap: parseTermMap(text),
+          classes: classes,
+          termType: parseTermType(text),
+          graphMaps: graphMaps
+        };
+      }
+
+      function parsePredicateMap(text) {
+        return {
+          termMap: parseTermMap(text),
+          termType: parseTermType(text)
+        };
+      }
+
+      function parseObjectMap(text) {
+        var parentMatch = text.match(/rr:parentTriplesMap\s+<#([^>]+)>\s*;/i);
+        if (parentMatch) {
+          var joinBlocks = extractBracketBlocks(text, 'rr:joinCondition');
+          var joinConditions = [];
+          for (var i = 0; i < joinBlocks.length; i++) {
+            joinConditions.push(parseJoinCondition(joinBlocks[i].content));
+          }
+          return {
+            type: 'parenttriplesmap',
+            parentTriplesMap: parentMatch[1],
+            joinConditions: joinConditions
+          };
+        }
+
+        var termType = parseTermType(text);
+        return {
+          type: 'objectmap',
+          termMap: parseTermMap(text),
+          termType: termType,
+          literalDatatype: termType == 'termtypeliteral' ? matchPlainProperty(text, 'rr:datatype') : null,
+          literalLanguage: termType == 'termtypeliteral' ? matchQuotedProperty(text, 'rr:language') : null,
+          datatype: termType == 'termtypeliteral' ? null : matchPlainProperty(text, 'rr:datatype'),
+          language: termType == 'termtypeliteral' ? null : matchQuotedProperty(text, 'rr:language'),
+          inverseExpression: matchQuotedProperty(text, 'rr:inverseExpression')
+        };
+      }
+
+      function parsePredicateObjectMap(text) {
+        var predicateBlocks = extractBracketBlocks(text, 'rr:predicateMap');
+        var objectBlocks = extractBracketBlocks(text, 'rr:objectMap');
+        var graphBlocks = extractBracketBlocks(text, 'rr:graphMap');
+        var predicateMaps = [];
+        var objectMaps = [];
+        var graphMaps = [];
+        for (var i = 0; i < predicateBlocks.length; i++) {
+          predicateMaps.push(parsePredicateMap(predicateBlocks[i].content));
+        }
+        for (var j = 0; j < objectBlocks.length; j++) {
+          objectMaps.push(parseObjectMap(objectBlocks[j].content));
+        }
+        for (var k = 0; k < graphBlocks.length; k++) {
+          graphMaps.push(parseGraphMap(graphBlocks[k].content));
+        }
+        return {
+          predicateMaps: predicateMaps,
+          objectMaps: objectMaps,
+          graphMaps: graphMaps
+        };
+      }
+
+      function parseHeaderItems(text) {
+        var firstTripleMap = text.search(/^\s*<#/m);
+        var header = firstTripleMap == -1 ? text : text.substring(0, firstTripleMap);
+        var items = [];
+        var lineRe = /^\s*@(prefix|base)\s+([^\n\r]+?)\s*\.\s*$/img;
+        var match;
+        while ((match = lineRe.exec(header)) != null) {
+          if (match[1].toLowerCase() == 'base') {
+            var baseMatch = match[2].match(/^<([^>]+)>$/);
+            if (baseMatch) {
+              items.push({type: 'base', uri: baseMatch[1]});
+            }
+            continue;
+          }
+          var prefixMatch = match[2].match(/^([A-Za-z][\w-]*):\s*<([^>]+)>$/);
+          if (prefixMatch && prefixMatch[1] != 'rr') {
+            items.push({type: 'prefix', prefix: prefixMatch[1], uri: prefixMatch[2]});
+          }
+        }
+        return items;
+      }
+
+      function parseTripleMaps(text) {
+        var maps = [];
+        var tripleMapRe = /^\s*<#([^>]+)>\s*$/gim;
+        var starts = [];
+        var match;
+        while ((match = tripleMapRe.exec(text)) != null) {
+          starts.push({
+            name: match[1],
+            bodyStart: tripleMapRe.lastIndex
+          });
+        }
+        for (var mapIndex = 0; mapIndex < starts.length; mapIndex++) {
+          var bodyEnd = mapIndex + 1 < starts.length ? starts[mapIndex + 1].bodyStart : text.length;
+          var body = text.substring(starts[mapIndex].bodyStart, bodyEnd);
+          var logicalBlocks = extractBracketBlocks(body, 'rr:logicalTable');
+          var subjectBlocks = extractBracketBlocks(body, 'rr:subjectMap');
+          var predicateObjectBlocks = extractBracketBlocks(body, 'rr:predicateObjectMap');
+          var predicateObjectMaps = [];
+          for (var i = 0; i < predicateObjectBlocks.length; i++) {
+            predicateObjectMaps.push(parsePredicateObjectMap(predicateObjectBlocks[i].content));
+          }
+          maps.push({
+            name: starts[mapIndex].name,
+            logicalTable: logicalBlocks.length ? parseLogicalTable(logicalBlocks[0].content) : null,
+            subjectMap: subjectBlocks.length ? parseSubjectMap(subjectBlocks[0].content) : null,
+            predicateObjectMaps: predicateObjectMaps
+          });
+        }
+        return maps;
+      }
+
+      function parseJumaTtl(text) {
+        var ttl = (text || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        return {
+          headerItems: parseHeaderItems(ttl),
+          tripleMaps: parseTripleMaps(ttl)
+        };
+      }
+
+      function createWorkspaceBlock(type) {
+        var block = workspace.newBlock(type);
+        block.initSvg();
+        block.render(false);
+        return block;
+      }
+
+      function setFieldIfPresent(block, fieldName, value) {
+        if (value != null && block.getField(fieldName)) {
+          block.setFieldValue(value, fieldName);
+        }
+      }
+
+      function applyTermMap(block, termMap) {
+        if (!termMap) {
+          return;
+        }
+        setFieldIfPresent(block, 'TERMMAP', termMap.kind);
+        setFieldIfPresent(block, 'TERMMAPVALUE', termMap.value);
+      }
+
+      function applyLogicalTable(parentBlock, logicalTable) {
+        if (!logicalTable) {
+          return;
+        }
+        var block = createWorkspaceBlock('tablesqlquery');
+        block.setFieldValue(logicalTable.type, 'TABLESQLQUERY');
+        block.sql = logicalTable.value;
+        block.setFieldValue(logicalTable.value.substring(0, 20) + (logicalTable.value.length > 20 ? '...' : ''), 'sql');
+        appendToStatementInput(parentBlock, 'logicaltable', block);
+      }
+
+      function applyGraphMap(parentBlock, inputName, blockType, graphMap) {
+        if (!graphMap || !graphMap.termMap) {
+          return;
+        }
+        var block = createWorkspaceBlock(blockType);
+        applyTermMap(block, graphMap.termMap);
+        appendToStatementInput(parentBlock, inputName, block);
+      }
+
+      function applySubjectMap(parentBlock, subjectMap) {
+        if (!subjectMap) {
+          return;
+        }
+        var subjectBlock = createWorkspaceBlock('subjectmap');
+        applyTermMap(subjectBlock, subjectMap.termMap);
+        appendToStatementInput(parentBlock, 'subjectmap', subjectBlock);
+        for (var i = 0; i < subjectMap.classes.length; i++) {
+          var classBlock = createWorkspaceBlock('class');
+          setFieldIfPresent(classBlock, 'CLASS', subjectMap.classes[i]);
+          appendToStatementInput(subjectBlock, 'termmap', classBlock);
+        }
+        if (subjectMap.termType) {
+          var termTypeBlock = createWorkspaceBlock('subjecttermtype');
+          setFieldIfPresent(termTypeBlock, 'TERMTYPE', subjectMap.termType);
+          appendToStatementInput(subjectBlock, 'termmap', termTypeBlock);
+        }
+        for (var j = 0; j < subjectMap.graphMaps.length; j++) {
+          applyGraphMap(subjectBlock, 'termmap', 'subjectgraphtermap', subjectMap.graphMaps[j]);
+        }
+      }
+
+      function applyPredicateMap(parentBlock, predicateMap) {
+        var block = createWorkspaceBlock('predicatemap');
+        applyTermMap(block, predicateMap.termMap);
+        appendToStatementInput(parentBlock, 'ppredicateobjectmap', block);
+        if (predicateMap.termType) {
+          var termTypeBlock = createWorkspaceBlock('predicatetermtype');
+          setFieldIfPresent(termTypeBlock, 'TERMTYPE', predicateMap.termType);
+          appendToStatementInput(block, 'termmap', termTypeBlock);
+        }
+      }
+
+      function applyObjectMap(parentBlock, objectMap) {
+        if (objectMap.type == 'parenttriplesmap') {
+          var parentTripleBlock = createWorkspaceBlock('parenttriplesmap');
+          setFieldIfPresent(parentTripleBlock, 'PARENTTRIPLEMAP', objectMap.parentTriplesMap);
+          appendToStatementInput(parentBlock, 'opredicateobjectmap', parentTripleBlock);
+          for (var i = 0; i < objectMap.joinConditions.length; i++) {
+            var joinBlock = createWorkspaceBlock('joincondition');
+            setFieldIfPresent(joinBlock, 'CHILD', objectMap.joinConditions[i].child);
+            setFieldIfPresent(joinBlock, 'PARENT', objectMap.joinConditions[i].parent);
+            appendToStatementInput(parentTripleBlock, 'joincondition', joinBlock);
+          }
+          return;
+        }
+
+        var block = createWorkspaceBlock('objectmap');
+        applyTermMap(block, objectMap.termMap);
+        appendToStatementInput(parentBlock, 'opredicateobjectmap', block);
+        if (objectMap.termType) {
+          var termTypeBlock = createWorkspaceBlock('objecttermtype');
+          setFieldIfPresent(termTypeBlock, 'TERMTYPE', objectMap.termType);
+          appendToStatementInput(block, 'termmap', termTypeBlock);
+          if (objectMap.termType == 'termtypeliteral') {
+            if (objectMap.literalDatatype) {
+              var datatypeValueBlock = createWorkspaceBlock('objectdatatype');
+              setFieldIfPresent(datatypeValueBlock, 'DATATYPE', objectMap.literalDatatype);
+              connectToValueInput(termTypeBlock, 'termtypevalue', datatypeValueBlock);
+            } else if (objectMap.literalLanguage) {
+              var languageValueBlock = createWorkspaceBlock('objectlanguage');
+              setFieldIfPresent(languageValueBlock, 'LANGUAGE', objectMap.literalLanguage);
+              connectToValueInput(termTypeBlock, 'termtypevalue', languageValueBlock);
+            }
+          }
+        }
+        if (objectMap.datatype) {
+          var datatypeBlock = createWorkspaceBlock('datatype');
+          setFieldIfPresent(datatypeBlock, 'DATATYPE', objectMap.datatype);
+          appendToStatementInput(block, 'termmap', datatypeBlock);
+        }
+        if (objectMap.language) {
+          var languageBlock = createWorkspaceBlock('language');
+          setFieldIfPresent(languageBlock, 'LANGUAGE', objectMap.language);
+          appendToStatementInput(block, 'termmap', languageBlock);
+        }
+        if (objectMap.inverseExpression) {
+          var inverseBlock = createWorkspaceBlock('inverseexpression');
+          setFieldIfPresent(inverseBlock, 'INVERSEEXPRESSION', objectMap.inverseExpression);
+          appendToStatementInput(block, 'termmap', inverseBlock);
+        }
+      }
+
+      function applyPredicateObjectMap(parentBlock, predicateObjectMap) {
+        var block = createWorkspaceBlock('predicateobjectmap');
+        appendToStatementInput(parentBlock, 'predicateobjectmap', block);
+        for (var i = 0; i < predicateObjectMap.predicateMaps.length; i++) {
+          applyPredicateMap(block, predicateObjectMap.predicateMaps[i]);
+        }
+        for (var j = 0; j < predicateObjectMap.objectMaps.length; j++) {
+          applyObjectMap(block, predicateObjectMap.objectMaps[j]);
+        }
+        for (var k = 0; k < predicateObjectMap.graphMaps.length; k++) {
+          applyGraphMap(block, 'graphmap', 'predicategraphtermap', predicateObjectMap.graphMaps[k]);
+        }
+      }
+
+      function isPredefinedVocab(prefix, uri) {
+        var value = prefix + ': <' + uri + '>';
+        for (var i = 0; i < vocabs.length; i++) {
+          if (vocabs[i][1] == value) {
+            return value;
+          }
+        }
+        return null;
+      }
+
+      function applyHeaderItem(mappingBlock, item) {
+        if (item.type == 'base') {
+          var baseBlock = createWorkspaceBlock('base');
+          setFieldIfPresent(baseBlock, 'URI', item.uri);
+          appendToStatementInput(mappingBlock, 'mapping', baseBlock);
+          return;
+        }
+        var predefinedValue = isPredefinedVocab(item.prefix, item.uri);
+        if (predefinedValue) {
+          var predefinedBlock = createWorkspaceBlock('predefinedprefix');
+          setFieldIfPresent(predefinedBlock, 'PREFIX', predefinedValue);
+          appendToStatementInput(mappingBlock, 'mapping', predefinedBlock);
+          return;
+        }
+        var prefixBlock = createWorkspaceBlock('prefix');
+        setFieldIfPresent(prefixBlock, 'PREFIX', item.prefix);
+        setFieldIfPresent(prefixBlock, 'URI', item.uri);
+        appendToStatementInput(mappingBlock, 'mapping', prefixBlock);
+      }
+
+      function applyParsedTtlModel(model) {
+        isRestoringWorkspace = true;
+        Blockly.Events.disable();
+        try {
+          workspace.clear();
+          Blockly.Xml.domToWorkspace(document.getElementById('startBlocks'), workspace);
+          var mappingBlock = getBlocksByType('mapping')[0];
+          for (var i = 0; i < model.headerItems.length; i++) {
+            applyHeaderItem(mappingBlock, model.headerItems[i]);
+          }
+          var tripleBlocks = [];
+          for (var j = 0; j < model.tripleMaps.length; j++) {
+            var tripleBlock = createWorkspaceBlock('triplemap');
+            setFieldIfPresent(tripleBlock, 'TRIPLEMAPNAME', model.tripleMaps[j].name);
+            appendToStatementInput(mappingBlock, 'triplesmap', tripleBlock);
+            tripleBlocks.push(tripleBlock);
+          }
+          for (var k = 0; k < model.tripleMaps.length; k++) {
+            applyLogicalTable(tripleBlocks[k], model.tripleMaps[k].logicalTable);
+            applySubjectMap(tripleBlocks[k], model.tripleMaps[k].subjectMap);
+            for (var p = 0; p < model.tripleMaps[k].predicateObjectMaps.length; p++) {
+              applyPredicateObjectMap(tripleBlocks[k], model.tripleMaps[k].predicateObjectMaps[p]);
+            }
+          }
+        } finally {
+          Blockly.Events.enable();
+          isRestoringWorkspace = false;
+        }
+        Blockly.svgResize(workspace);
+        generateCode();
+      }
+
+      function importTtlText(ttlText) {
+        var model = parseJumaTtl(ttlText);
+        if (!model.headerItems.length && !model.tripleMaps.length) {
+          alert('No Juma R2RML content was found in this TTL file.');
+          return;
+        }
+        applyParsedTtlModel(model);
+        persistDraftState(true);
+        setStorageStatus('TTL loaded');
+      }
+
+      function loadTtlFile(file) {
+        if (!file) {
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(event) {
+          try {
+            importTtlText(event.target.result);
+          } catch (e) {
+            alert('Could not load this TTL file.');
+          }
+          $('#loadTtlFile').val('');
+        };
+        reader.readAsText(file);
+      }
+
+      function generateCode(event) {
+        var code = R2RML.workspaceToCode(workspace);
+        document.getElementById('code').value = code;
+        if (!isRestoringWorkspace) {
+          persistDraftState(false);
+        }
 		  }
 
 		  function getExportFileName() {
@@ -718,10 +1458,30 @@
 		  	}, 0);
 		  }
 		  
+		  initializeWorkspacePersistence();
 		  installFlyoutBlockFallback();
 		  workspace.addChangeListener(placeCreatedBlock);
 		  workspace.addChangeListener(generateCode);
 
+      $('#loadTtlButton').on('click', function() {
+        $('#loadTtlFile').click();
+      });
+      $('#loadTtlFile').on('change', function(event) {
+        loadTtlFile(event.target.files && event.target.files[0]);
+      });
+      $('#saveWorkspace').on('click', saveWorkspaceState);
+      $('#undoWorkspace').on('click', undoWorkspaceToSavedState);
+      $('#clearWorkspace').on('click', clearWorkspaceState);
+      $('#autosaveToggle').on('change', function() {
+        autosaveEnabled = this.checked;
+        setPersistentValue(STORAGE_KEYS.autosave, autosaveEnabled ? 'true' : 'false');
+        if (autosaveEnabled) {
+          persistDraftState(true);
+          setStorageStatus('Autosave on');
+        } else {
+          setStorageStatus('Autosave off');
+        }
+		  });
 		  $('#exportR2RML').on('click', exportGeneratedR2RML);
 		  $('#exportFileName').on('keydown', function(event) {
 		  	if (event.keyCode == 13) {
@@ -729,6 +1489,7 @@
 		  		exportGeneratedR2RML();
 		  	}
 		  });
+		  loadInitialWorkspace();
 
 		  $('.nav-tabs a').on('click', function(event){
 				var x = $(event.target).text();         // active tab
