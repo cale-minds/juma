@@ -334,6 +334,136 @@
 				color: #ffffff;
 			}
 
+			.material-dialog {
+				align-items: center;
+				display: none;
+				inset: 0;
+				justify-content: center;
+				padding: 24px;
+				position: fixed;
+				z-index: 2000;
+			}
+
+			.material-dialog.is-visible {
+				display: flex;
+			}
+
+			.material-dialog__backdrop {
+				background: rgba(15, 23, 42, 0.48);
+				inset: 0;
+				position: absolute;
+			}
+
+			.material-dialog__surface {
+				background: #ffffff;
+				border-radius: 16px;
+				box-shadow: 0 24px 60px rgba(15, 23, 42, 0.26);
+				color: #263238;
+				max-width: 440px;
+				min-width: 320px;
+				outline: none;
+				padding: 24px;
+				position: relative;
+				transform: translateY(8px) scale(0.98);
+				transition: transform 0.16s ease, opacity 0.16s ease;
+				width: min(100%, 440px);
+			}
+
+			.material-dialog.is-visible .material-dialog__surface {
+				opacity: 1;
+				transform: translateY(0) scale(1);
+			}
+
+			.material-dialog__header {
+				align-items: center;
+				display: flex;
+				gap: 14px;
+				margin-bottom: 12px;
+			}
+
+			.material-dialog__icon {
+				align-items: center;
+				background: #e3f2fd;
+				border-radius: 50%;
+				color: #1565c0;
+				display: inline-flex;
+				flex: 0 0 auto;
+				font-size: 20px;
+				font-weight: 700;
+				height: 40px;
+				justify-content: center;
+				width: 40px;
+			}
+
+			.material-dialog.is-danger .material-dialog__icon {
+				background: #ffebee;
+				color: #c62828;
+			}
+
+			.material-dialog__title {
+				color: #1f2937;
+				font-size: 20px;
+				font-weight: 600;
+				line-height: 1.25;
+				margin: 0;
+			}
+
+			.material-dialog__message {
+				color: #546e7a;
+				font-size: 15px;
+				line-height: 1.5;
+				margin: 0 0 24px;
+			}
+
+			.material-dialog__actions {
+				display: flex;
+				gap: 10px;
+				justify-content: flex-end;
+			}
+
+			.material-dialog__button {
+				border: 0;
+				border-radius: 999px;
+				font-weight: 600;
+				min-width: 88px;
+				padding: 10px 18px;
+				transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+			}
+
+			.material-dialog__button:hover {
+				transform: translateY(-1px);
+			}
+
+			.material-dialog__button--secondary {
+				background: transparent;
+				color: #1565c0;
+			}
+
+			.material-dialog__button--secondary:hover {
+				background: #eef5ff;
+			}
+
+			.material-dialog__button--primary {
+				background: #1976d2;
+				box-shadow: 0 2px 6px rgba(25, 118, 210, 0.24);
+				color: #ffffff;
+			}
+
+			.material-dialog__button--primary:hover {
+				background: #1565c0;
+				box-shadow: 0 4px 12px rgba(25, 118, 210, 0.28);
+			}
+
+			.material-dialog.is-danger .material-dialog__button--primary {
+				background: #c62828;
+				box-shadow: 0 2px 6px rgba(198, 40, 40, 0.24);
+			}
+
+			.material-dialog.is-danger .material-dialog__button--primary:hover {
+				background: #b71c1c;
+				box-shadow: 0 4px 12px rgba(198, 40, 40, 0.28);
+			}
+
 			.app-footer {
 				align-items: center;
 				background: #ffffff;
@@ -508,6 +638,20 @@
 		<span class="footer-divider">|</span>
 		<span>New features and enhancements: Felipe Calé</span>
 	</footer>
+	<div id="materialDialog" class="material-dialog" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="materialDialogTitle" aria-describedby="materialDialogMessage">
+		<div class="material-dialog__backdrop"></div>
+		<section class="material-dialog__surface" tabindex="-1">
+			<div class="material-dialog__header">
+				<div id="materialDialogIcon" class="material-dialog__icon" aria-hidden="true">i</div>
+				<h2 id="materialDialogTitle" class="material-dialog__title"></h2>
+			</div>
+			<p id="materialDialogMessage" class="material-dialog__message"></p>
+			<div class="material-dialog__actions">
+				<button id="materialDialogSecondary" type="button" class="material-dialog__button material-dialog__button--secondary">Cancel</button>
+				<button id="materialDialogPrimary" type="button" class="material-dialog__button material-dialog__button--primary">OK</button>
+			</div>
+		</section>
+	</div>
 		<xml id="toolbox" style="display: none">  
 		  <category name="Templates" colour="360">
 			<block type="triplemap">
@@ -650,6 +794,118 @@
 		  };
 		  var autosaveEnabled = true;
 		  var isRestoringWorkspace = false;
+
+		  var activeDialogResolve = null;
+		  var activeDialogKind = 'alert';
+		  var lastDialogFocus = null;
+
+		  function closeMaterialDialog(result) {
+		    var resolve = activeDialogResolve;
+		    activeDialogResolve = null;
+		    $('#materialDialog')
+		      .removeClass('is-visible is-danger')
+		      .attr('aria-hidden', 'true');
+
+		    if (lastDialogFocus && lastDialogFocus.focus) {
+		      lastDialogFocus.focus();
+		    }
+		    lastDialogFocus = null;
+
+		    if (resolve) {
+		      resolve(result);
+		    }
+		  }
+
+		  function openMaterialDialog(options) {
+		    options = options || {};
+		    return new Promise(function(resolve) {
+		      if (activeDialogResolve) {
+		        closeMaterialDialog(false);
+		      }
+
+		      var kind = options.kind || 'alert';
+		      var $dialog = $('#materialDialog');
+		      var $secondary = $('#materialDialogSecondary');
+		      var icon = options.icon || (options.danger ? '!' : 'i');
+
+		      activeDialogResolve = resolve;
+		      activeDialogKind = kind;
+		      lastDialogFocus = document.activeElement;
+
+		      $('#materialDialogTitle').text(options.title || 'Notice');
+		      $('#materialDialogMessage').text(options.message || '');
+		      $('#materialDialogIcon').text(icon);
+		      $('#materialDialogPrimary').text(options.confirmText || 'OK');
+		      $secondary.text(options.cancelText || 'Cancel').toggle(kind === 'confirm');
+
+		      $dialog
+		        .toggleClass('is-danger', !!options.danger)
+		        .addClass('is-visible')
+		        .attr('aria-hidden', 'false');
+
+		      setTimeout(function() {
+		        $('#materialDialogPrimary').focus();
+		      }, 0);
+		    });
+		  }
+
+		  function showMaterialAlert(message, options) {
+		    options = options || {};
+		    options.kind = 'alert';
+		    options.message = message;
+		    return openMaterialDialog(options);
+		  }
+
+		  function showMaterialConfirm(message, options) {
+		    options = options || {};
+		    options.kind = 'confirm';
+		    options.message = message;
+		    return openMaterialDialog(options);
+		  }
+
+		  function installMaterialDialogHandlers() {
+		    $('#materialDialogPrimary').on('click', function() {
+		      closeMaterialDialog(true);
+		    });
+		    $('#materialDialogSecondary').on('click', function() {
+		      closeMaterialDialog(false);
+		    });
+		    $('.material-dialog__backdrop').on('click', function() {
+		      closeMaterialDialog(activeDialogKind === 'confirm' ? false : true);
+		    });
+		    $(document).on('keydown', function(event) {
+		      if (!$('#materialDialog').hasClass('is-visible')) {
+		        return;
+		      }
+
+		      if (event.which === 27) {
+		        event.preventDefault();
+		        closeMaterialDialog(activeDialogKind === 'confirm' ? false : true);
+		        return;
+		      }
+
+		      if (event.which !== 9) {
+		        return;
+		      }
+
+		      var $focusable = $('#materialDialog')
+		        .find('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+		        .filter(':visible:not(:disabled)');
+		      if (!$focusable.length) {
+		        return;
+		      }
+
+		      var first = $focusable[0];
+		      var last = $focusable[$focusable.length - 1];
+		      if (event.shiftKey && document.activeElement === first) {
+		        event.preventDefault();
+		        last.focus();
+		      } else if (!event.shiftKey && document.activeElement === last) {
+		        event.preventDefault();
+		        first.focus();
+		      }
+		    });
+		  }
 
 		  var autoConnectRules = {
 		  	predefinedprefix: [{parentType: 'mapping', inputName: 'mapping', inputKind: 'statement'}],
@@ -1260,7 +1516,9 @@
       function undoWorkspaceToSavedState() {
         var savedXml = getPersistentValue(STORAGE_KEYS.savedXml);
         if (!savedXml) {
-          alert('No saved state found.');
+          showMaterialAlert('No saved state found.', {
+            title: 'Nothing to restore'
+          });
           return;
         }
         loadWorkspaceXmlText(savedXml);
@@ -1269,15 +1527,23 @@
       }
 
       function clearWorkspaceState() {
-        if (!confirm('Clear current project?')) {
-          return;
-        }
-        removePersistentValue(STORAGE_KEYS.draftXml);
-        removePersistentValue(STORAGE_KEYS.savedXml);
-        removePersistentValue(STORAGE_KEYS.code);
-        loadStartWorkspace();
-        persistDraftState(true);
-        setStorageStatus('Cleared');
+        showMaterialConfirm('This will remove the current project from the workspace and storage.', {
+          title: 'Clear current project?',
+          confirmText: 'Clear',
+          cancelText: 'Cancel',
+          danger: true,
+          icon: '!'
+        }).then(function(confirmed) {
+          if (!confirmed) {
+            return;
+          }
+          removePersistentValue(STORAGE_KEYS.draftXml);
+          removePersistentValue(STORAGE_KEYS.savedXml);
+          removePersistentValue(STORAGE_KEYS.code);
+          loadStartWorkspace();
+          persistDraftState(true);
+          setStorageStatus('Cleared');
+        });
       }
 
       function initializeWorkspacePersistence() {
@@ -1790,7 +2056,9 @@
       function importTtlText(ttlText) {
         var model = parseJumaTtl(ttlText);
         if (!model.headerItems.length && !model.tripleMaps.length) {
-          alert('No Juma R2RML content was found in this TTL file.');
+          showMaterialAlert('No Juma R2RML content was found in this TTL file.', {
+            title: 'TTL not recognized'
+          });
           return;
         }
         applyParsedTtlModel(model);
@@ -1807,7 +2075,11 @@
           try {
             importTtlText(event.target.result);
           } catch (e) {
-            alert('Could not load this TTL file.');
+            showMaterialAlert('Could not load this TTL file.', {
+              title: 'Load failed',
+              danger: true,
+              icon: '!'
+            });
           }
           $('#loadTtlFile').val('');
         };
@@ -1823,26 +2095,32 @@
 		  }
 
 		  function getExportFileName() {
-		  	var fileName = ($('#exportFileName').val() || '').replace(/^\s+|\s+$/g, '');
-		  	if (!fileName) {
-		  		alert('Enter a file name before exporting.');
-		  		$('#exportFileName').focus();
-		  		return null;
-		  	}
+		    var fileName = ($('#exportFileName').val() || '').replace(/^\s+|\s+$/g, '');
+		    if (!fileName) {
+		      showMaterialAlert('Enter a file name before exporting.', {
+		        title: 'File name required'
+		      });
+		      $('#exportFileName').focus();
+		      return null;
+		    }
 
-		  	fileName = fileName.replace(/[\\\/:*?"<>|]+/g, '_')
-		  		.replace(/^\.+/, '')
-		  		.replace(/\.+$/, '');
-		  	if (!fileName) {
-		  		alert('Enter a valid file name before exporting.');
-		  		$('#exportFileName').focus();
-		  		return null;
-		  	}
+		    fileName = fileName.replace(/[\\\/:*?"<>|]+/g, '_')
+		      .replace(/^\.+/, '')
+		      .replace(/\.+$/, '');
+		    if (!fileName) {
+		      showMaterialAlert('Enter a valid file name before exporting.', {
+		        title: 'Invalid file name',
+		        danger: true,
+		        icon: '!'
+		      });
+		      $('#exportFileName').focus();
+		      return null;
+		    }
 
-		  	if (!/\.ttl$/i.test(fileName)) {
-		  		fileName += '.ttl';
-		  	}
-		  	return fileName;
+		    if (!/\.ttl$/i.test(fileName)) {
+		      fileName += '.ttl';
+		    }
+		    return fileName;
 		  }
 
 		  function exportGeneratedR2RML() {
@@ -1871,6 +2149,7 @@
 		  	}, 0);
 		  }
 		  
+		  installMaterialDialogHandlers();
 		  initializeWorkspacePersistence();
 		  installFlyoutBlockFallback();
       installWorkspaceResizeHooks();
