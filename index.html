@@ -18,6 +18,20 @@
 		<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
 
 		<style type="text/css">
+			html,
+			body {
+				height: 100%;
+			}
+
+			body {
+				background: #f5f7fb;
+				color: #263238;
+				display: flex;
+				flex-direction: column;
+				font-family: "Segoe UI", Roboto, Arial, sans-serif;
+				overflow: hidden;
+			}
+
 			.hideInput {
 				display: none;
 			}
@@ -28,26 +42,97 @@
 				fill: #f00 ;
 			}
 
+			.nav-tabs {
+				background: #ffffff;
+				border-bottom: 1px solid #dfe5ee;
+				box-shadow: 0 1px 4px rgba(31, 41, 55, 0.08);
+				padding: 0 16px;
+			}
+
+			.nav-tabs > li > a {
+				border-radius: 0;
+				color: #455a64;
+				font-weight: 500;
+				margin-right: 8px;
+				padding: 14px 16px;
+			}
+
+			.nav-tabs > li.active > a,
+			.nav-tabs > li.active > a:focus,
+			.nav-tabs > li.active > a:hover {
+				border: 0;
+				border-bottom: 3px solid #1976d2;
+				color: #1976d2;
+			}
+
+			.tab-content,
+			.tab-pane {
+				min-height: 0;
+			}
+
+			.tab-content {
+				flex: 1 1 auto;
+				overflow: hidden;
+			}
+
+			.tab-content > .tab-pane.active {
+				display: flex;
+				flex-direction: column;
+				height: 100%;
+			}
+
 			.r2rml-mapping-pane {
-				padding: 16px;
+				box-sizing: border-box;
+				display: flex;
+				flex-direction: column;
+				height: 100%;
+				padding: 16px 20px 20px;
 			}
 
-			.r2rml-mapping-pane > .row {
-				margin-left: 0;
-				margin-right: 0;
+			.mapping-layout {
+				display: flex;
+				flex: 1 1 auto;
+				gap: 16px;
+				height: 100%;
+				min-height: 0;
+				min-width: 0;
 			}
 
-			.r2rml-mapping-pane > .row > .col-md-9 {
-				padding-left: 0;
-				padding-right: 0;
+			.workspace-column {
+				display: flex;
+				flex: 1 1 auto;
+				flex-direction: column;
+				min-height: 0;
+				min-width: 0;
 			}
 
-			.r2rml-mapping-pane > .row > .col-md-3 {
-				padding-right: 0;
+			.workspace-editor {
+				flex: 0 0 340px;
+				min-width: 300px;
+			}
+
+			.workspace-editor .panel {
+				border: 0;
+				border-radius: 10px;
+				box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+			}
+
+			.workspace-panel {
+				border: 0;
+				border-radius: 12px;
+				box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+				flex: 1 1 auto;
+				margin-bottom: 0;
+				min-height: 0;
+				overflow: hidden;
 			}
 
 			.r2rml-export-pane {
-				padding: 16px;
+				box-sizing: border-box;
+				display: flex;
+				flex-direction: column;
+				height: 100%;
+				padding: 16px 20px 20px;
 			}
 
 			.r2rml-export-pane > .row {
@@ -64,36 +149,187 @@
 				margin-bottom: 12px;
 			}
 
+			.r2rml-export-pane .panel {
+				border: 0;
+				border-radius: 12px;
+				box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+				margin-bottom: 0;
+				overflow: hidden;
+			}
+
+			#code {
+				border: 0;
+				box-shadow: none;
+				height: calc(100vh - 170px);
+				min-height: 420px;
+				resize: none;
+			}
+
 			.r2rml-export-toolbar .form-group {
 				margin-right: 6px;
 			}
 
 			.mapping-toolbar {
+				background: #ffffff;
+				border-radius: 12px;
+				box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
 				display: flex;
 				flex-wrap: wrap;
 				align-items: center;
-				padding: 0 0 12px;
+				gap: 10px;
+				margin-bottom: 12px;
+				padding: 10px;
 			}
 
-			.mapping-toolbar .btn {
-				margin-right: 4px;
-				margin-bottom: 6px;
+			.toolbar-group {
+				align-items: center;
+				display: inline-flex;
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+
+			.toolbar-separator {
+				align-self: stretch;
+				background: #dfe7f1;
+				margin: 4px 6px;
+				width: 1px;
+			}
+
+			.toolbar-spacer {
+				flex: 1 1 auto;
+			}
+
+			.mapping-toolbar .btn,
+			.r2rml-export-toolbar .btn,
+			#saveLogicalTable {
+				background: #ffffff;
+				border: 1px solid #d7dee8;
+				border-radius: 8px;
+				box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+				color: #263238;
+				font-weight: 500;
+				height: 40px;
+				transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+			}
+
+			.mapping-toolbar .btn:hover,
+			.r2rml-export-toolbar .btn:hover,
+			#saveLogicalTable:hover {
+				background: #f8fbff;
+				box-shadow: 0 3px 8px rgba(15, 23, 42, 0.14);
+				transform: translateY(-1px);
+			}
+
+			.mapping-toolbar .viewport-action {
+				background: #eef5ff;
+				border-color: #c7dcf8;
+				color: #1565c0;
 			}
 
 			.mapping-toolbar .checkbox {
-				margin-left: 8px;
-				margin-right: 8px;
+				margin-left: 0;
+				margin-right: 0;
+				padding-top: 0;
+			}
+
+			.autosave-status {
+				align-items: center;
+				display: inline-flex;
+				flex: 0 0 auto;
+				gap: 12px;
+				margin-left: 0;
+			}
+
+			.mapping-toolbar .checkbox-inline {
+				align-items: center;
+				color: #455a64;
+				display: inline-flex;
+				font-weight: 500;
+				height: 40px;
+				margin-bottom: 0;
 			}
 
 			.storage-status {
-				color: #777;
+				background: #eef2f7;
+				border-radius: 999px;
+				color: #607d8b;
 				display: inline-block;
-				margin-left: 4px;
+				font-size: 13px;
+				line-height: 24px;
+				padding: 0 10px;
 			}
 
 			.mapping-workspace {
-				height: calc(100vh - 320px);
-				min-height: 420px;
+				height: 100%;
+				min-height: 0;
+			}
+
+			.blocklySvg {
+				background: #ffffff;
+			}
+
+			.blocklyMainBackground {
+				cursor: grab;
+				stroke: #d7e2ec;
+			}
+
+			.blocklyMainBackground:active {
+				cursor: grabbing;
+			}
+
+			.blocklyToolboxDiv {
+				background: #f1f5f9;
+				border-right: 1px solid #d7dee8;
+			}
+
+			.blocklyTreeRow {
+				border-radius: 0 18px 18px 0;
+				margin: 3px 8px 3px 0;
+				padding: 3px 8px 3px 0;
+			}
+
+			.blocklyTreeSelected {
+				background-color: #1976d2 !important;
+				color: #ffffff;
+			}
+
+			@media (max-width: 900px) {
+				body {
+					overflow: auto;
+				}
+
+				.tab-content,
+				.tab-pane {
+					height: auto;
+					min-height: calc(100vh - 49px);
+				}
+
+				.r2rml-mapping-pane {
+					min-height: calc(100vh - 49px);
+					padding: 12px;
+				}
+
+				.mapping-layout {
+					flex-direction: column;
+				}
+
+				.workspace-column {
+					min-height: 70vh;
+				}
+
+				.workspace-editor {
+					flex-basis: auto;
+					min-width: 0;
+				}
+
+				.toolbar-separator,
+				.toolbar-spacer {
+					display: none;
+				}
+
+				.autosave-status {
+					margin-left: 0;
+				}
 			}
 		</style>
 	</head>
@@ -106,24 +342,36 @@
 	<div class="tab-content">
 		<div role="tabpanel" class="tab-pane active" id="tab1">
 			<div class="r2rml-mapping-pane">
-				<div class="row">
-					<div class="col-md-9">
+				<div class="mapping-layout">
+					<div class="workspace-column">
 						<div class="mapping-toolbar">
-							<button id="loadTtlButton" type="button" class="btn btn-default">Load TTL</button>
-							<input id="loadTtlFile" type="file" accept=".ttl,text/turtle,text/plain" style="display:none;" />
-							<button id="saveWorkspace" type="button" class="btn btn-default">Save</button>
-							<button id="undoWorkspace" type="button" class="btn btn-default">Undo</button>
-							<button id="clearWorkspace" type="button" class="btn btn-default">Clear</button>
-							<label class="checkbox-inline">
-								<input id="autosaveToggle" type="checkbox" /> Autosave
-							</label>
-							<span id="storageStatus" class="storage-status"></span>
+							<div class="toolbar-group state-controls">
+								<button id="loadTtlButton" type="button" class="btn btn-default">Load TTL</button>
+								<input id="loadTtlFile" type="file" accept=".ttl,text/turtle,text/plain" style="display:none;" />
+								<button id="saveWorkspace" type="button" class="btn btn-default">Save</button>
+								<button id="undoWorkspace" type="button" class="btn btn-default">Undo</button>
+								<button id="clearWorkspace" type="button" class="btn btn-default">Clear</button>
+							</div>
+							<div class="toolbar-separator"></div>
+							<div class="autosave-status">
+								<label class="checkbox-inline">
+									<input id="autosaveToggle" type="checkbox" /> Autosave
+								</label>
+								<span id="storageStatus" class="storage-status"></span>
+							</div>
+							<div class="toolbar-spacer"></div>
+							<div class="toolbar-group viewport-controls">
+								<button id="fitWorkspace" type="button" class="btn btn-default viewport-action">Fit</button>
+								<button id="centerWorkspace" type="button" class="btn btn-default viewport-action">Center</button>
+								<button id="zoomOutWorkspace" type="button" class="btn btn-default viewport-action">Zoom -</button>
+								<button id="zoomInWorkspace" type="button" class="btn btn-default viewport-action">Zoom +</button>
+							</div>
 						</div>
-						<div class="panel panel-info">
+						<div class="panel panel-info workspace-panel">
 							<div id="blocklyDiv" class="mapping-workspace"></div>
 						</div>
 					</div>
-					<div id="edit" class="col-md-3" style="display:none;">
+					<div id="edit" class="workspace-editor" style="display:none;">
 						<div class="panel panel-info">
 						<div class="panel-heading">Table name or SQL query</div>
 						<div class="panel panel-info">
@@ -271,15 +519,21 @@
 		</xml> -->
 
 		<script>
-		var workspace = Blockly.inject('blocklyDiv', 
-		  {toolbox: document.getElementById('toolbox'), 
-		  	zoom:
-	         {controls: true,
-	          wheel: true,
-	          startScale: 0.8,
-	          maxScale: 3,
-	          minScale: 0.3,
-	          scaleSpeed: 1.1},
+		var workspace = Blockly.inject('blocklyDiv',
+		  {toolbox: document.getElementById('toolbox'),
+		    grid:
+	          {spacing: 25,
+	           length: 2,
+	           colour: '#e4ecf5',
+	           snap: false},
+		    scrollbars: true,
+		    zoom:
+	          {controls: true,
+	           wheel: true,
+	           startScale: 0.85,
+	           maxScale: 4,
+	           minScale: 0.1,
+	           scaleSpeed: 1.08},
 	     		trashcan: true,
 	     		sounds: false});
 
@@ -800,6 +1054,60 @@
         return Blockly.Xml.domToText(xml);
       }
 
+      function resizeWorkspace() {
+        Blockly.svgResize(workspace);
+        if (workspace.resize) {
+          workspace.resize();
+        }
+      }
+
+      function scheduleWorkspaceResize() {
+        resizeWorkspace();
+        setTimeout(resizeWorkspace, 80);
+        setTimeout(resizeWorkspace, 250);
+      }
+
+      function fitWorkspaceToBlocks() {
+        resizeWorkspace();
+        if (getWorkspaceBlockCount() > 1 && workspace.zoomToFit) {
+          workspace.zoomToFit();
+          if (workspace.scale > 1) {
+            workspace.setScale(1);
+            workspace.scrollCenter();
+          }
+        } else if (workspace.scrollCenter) {
+          workspace.scrollCenter();
+        }
+        resizeWorkspace();
+      }
+
+      function centerWorkspaceView() {
+        resizeWorkspace();
+        if (workspace.scrollCenter) {
+          workspace.scrollCenter();
+        }
+      }
+
+      function zoomWorkspace(direction) {
+        resizeWorkspace();
+        var metrics = workspace.getMetrics();
+        if (metrics && workspace.zoom) {
+          workspace.zoom(metrics.viewWidth / 2, metrics.viewHeight / 2, direction);
+        } else if (workspace.zoomCenter) {
+          workspace.zoomCenter(direction);
+        }
+        resizeWorkspace();
+      }
+
+      function installWorkspaceResizeHooks() {
+        $(window).on('resize', scheduleWorkspaceResize);
+        if (window.MutationObserver) {
+          var editPanel = document.getElementById('edit');
+          var observer = new MutationObserver(scheduleWorkspaceResize);
+          observer.observe(editPanel, {attributes: true, attributeFilter: ['style', 'class']});
+        }
+      }
+
       function persistDraftState(force) {
         if (!force && !autosaveEnabled) {
           return;
@@ -818,7 +1126,7 @@
           Blockly.Events.enable();
           isRestoringWorkspace = false;
         }
-        Blockly.svgResize(workspace);
+        resizeWorkspace();
         generateCode();
       }
 
@@ -832,7 +1140,7 @@
           Blockly.Events.enable();
           isRestoringWorkspace = false;
         }
-        Blockly.svgResize(workspace);
+        resizeWorkspace();
         generateCode();
       }
 
@@ -1370,7 +1678,7 @@
           Blockly.Events.enable();
           isRestoringWorkspace = false;
         }
-        Blockly.svgResize(workspace);
+        resizeWorkspace();
         generateCode();
       }
 
@@ -1460,6 +1768,7 @@
 		  
 		  initializeWorkspacePersistence();
 		  installFlyoutBlockFallback();
+      installWorkspaceResizeHooks();
 		  workspace.addChangeListener(placeCreatedBlock);
 		  workspace.addChangeListener(generateCode);
 
@@ -1472,6 +1781,14 @@
       $('#saveWorkspace').on('click', saveWorkspaceState);
       $('#undoWorkspace').on('click', undoWorkspaceToSavedState);
       $('#clearWorkspace').on('click', clearWorkspaceState);
+      $('#fitWorkspace').on('click', fitWorkspaceToBlocks);
+      $('#centerWorkspace').on('click', centerWorkspaceView);
+      $('#zoomOutWorkspace').on('click', function() {
+        zoomWorkspace(-1);
+      });
+      $('#zoomInWorkspace').on('click', function() {
+        zoomWorkspace(1);
+      });
       $('#autosaveToggle').on('change', function() {
         autosaveEnabled = this.checked;
         setPersistentValue(STORAGE_KEYS.autosave, autosaveEnabled ? 'true' : 'false');
@@ -1490,6 +1807,7 @@
 		  	}
 		  });
 		  loadInitialWorkspace();
+      scheduleWorkspaceResize();
 
 		  $('.nav-tabs a').on('click', function(event){
 				var x = $(event.target).text();         // active tab
@@ -1497,6 +1815,7 @@
 					$('.blocklyToolboxDiv').hide();
 				} else {
 					$('.blocklyToolboxDiv').show();
+          scheduleWorkspaceResize();
 				}
 			});
 		</script>
