@@ -1990,6 +1990,7 @@
         setStorageValue(localStorage, STORAGE_KEYS.ontologies, JSON.stringify({
           ontologies: ontologyState.ontologies
         }));
+        syncImportedOntologyPrefixBlocks();
       }
 
       function renderOntologyCatalog() {
@@ -2037,6 +2038,109 @@
           }
         }
         return null;
+      }
+
+      function normalizePrefixBlockUri(uri) {
+        return normalizeOntologyUrl(uri).replace(/^<|>$/g, '');
+      }
+
+      function findOntologyByUrl(url) {
+        var normalized = normalizePrefixBlockUri(url);
+        if (!normalized) {
+          return null;
+        }
+        for (var i = 0; i < ontologyState.ontologies.length; i++) {
+          if (normalizePrefixBlockUri(ontologyState.ontologies[i].url) === normalized) {
+            return ontologyState.ontologies[i];
+          }
+        }
+        return null;
+      }
+
+      var isSyncingImportedOntologyPrefixBlock = false;
+
+      function setPrefixBlockFieldValue(block, fieldName, value) {
+        if (!block || block.getFieldValue(fieldName) === value) {
+          return false;
+        }
+        Blockly.Events.disable();
+        try {
+          block.setFieldValue(value, fieldName);
+        } finally {
+          Blockly.Events.enable();
+        }
+        if (block.rendered) {
+          block.render();
+        }
+        return true;
+      }
+
+      function syncImportedOntologyPrefixBlock(block, changedFieldName) {
+        if (!block || block.type !== 'prefix' || isSyncingImportedOntologyPrefixBlock) {
+          return false;
+        }
+
+        var prefix = normalizeOntologyPrefix(block.getFieldValue('PREFIX'));
+        var uri = normalizePrefixBlockUri(block.getFieldValue('URI'));
+        var ontology = null;
+        var changed = false;
+
+        isSyncingImportedOntologyPrefixBlock = true;
+        try {
+          if (changedFieldName === 'PREFIX' && prefix) {
+            ontology = findOntologyByPrefix(prefix);
+            if (ontology && ontology.url) {
+              changed = setPrefixBlockFieldValue(block, 'URI', ontology.url);
+            }
+          } else if (changedFieldName === 'URI' && uri) {
+            ontology = findOntologyByUrl(uri);
+            if (ontology && ontology.prefix) {
+              changed = setPrefixBlockFieldValue(block, 'PREFIX', ontology.prefix);
+            }
+          } else {
+            ontology = prefix ? findOntologyByPrefix(prefix) : null;
+            if (ontology && ontology.url) {
+              changed = setPrefixBlockFieldValue(block, 'URI', ontology.url);
+            } else {
+              ontology = uri ? findOntologyByUrl(uri) : null;
+              if (ontology && ontology.prefix) {
+                changed = setPrefixBlockFieldValue(block, 'PREFIX', ontology.prefix);
+              }
+            }
+          }
+        } finally {
+          isSyncingImportedOntologyPrefixBlock = false;
+        }
+        return changed;
+      }
+
+      function syncImportedOntologyPrefixBlocks(event) {
+        if (isRestoringWorkspace || isSyncingImportedOntologyPrefixBlock) {
+          return;
+        }
+        if (event && event.type && event.type !== Blockly.Events.CHANGE && event.type !== 'change') {
+          return;
+        }
+        if (event && event.element && event.element !== 'field') {
+          return;
+        }
+        if (event && event.name && event.name !== 'PREFIX' && event.name !== 'URI') {
+          return;
+        }
+
+        var changed = false;
+        if (event && event.blockId) {
+          changed = syncImportedOntologyPrefixBlock(workspace.getBlockById(event.blockId), event.name);
+        } else {
+          var blocks = workspace.getAllBlocks ? workspace.getAllBlocks() : workspace.getTopBlocks(false);
+          for (var i = 0; i < blocks.length; i++) {
+            changed = syncImportedOntologyPrefixBlock(blocks[i], '') || changed;
+          }
+        }
+
+        if (changed) {
+          generateCode();
+        }
       }
 
       function resetOntologyForm() {
@@ -3851,6 +3955,7 @@
           isRestoringWorkspace = false;
         }
         resizeWorkspace();
+        syncImportedOntologyPrefixBlocks();
         generateCode();
       }
 
@@ -3865,6 +3970,7 @@
           isRestoringWorkspace = false;
         }
         resizeWorkspace();
+        syncImportedOntologyPrefixBlocks();
         generateCode();
       }
 
@@ -4515,11 +4621,12 @@
 		  installMaterialDialogHandlers();
       installOntologyManagerHandlers();
       installOntologyAutocomplete();
-      loadOntologyState();
+		  loadOntologyState();
 		  initializeWorkspacePersistence();
 		  installFlyoutBlockFallback();
       installWorkspaceResizeHooks();
 		  workspace.addChangeListener(placeCreatedBlock);
+		  workspace.addChangeListener(syncImportedOntologyPrefixBlocks);
 		  workspace.addChangeListener(generateCode);
 
       $('#loadTtlButton').on('click', function() {
