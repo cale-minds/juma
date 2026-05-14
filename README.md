@@ -8,6 +8,18 @@ In this implementation, we have applied the Juma method to the W3C Recommendatio
 
 Open index.html into a browser. 
 
+## Ontology URL proxy
+
+Published deployments on Vercel use the serverless function at `/api/ontology-proxy` automatically for ontology URL imports blocked by CORS.
+
+For reliable local demos without public proxy limits, run:
+
+```bash
+node ontology-proxy-server.js
+```
+
+Then open `http://localhost:8787/index.html`, or keep using `index.html` from disk. The application will try direct access first, then the Juma proxy, and only then public demo proxies.
+
 More information available at https://www.scss.tcd.ie/~crottija/juma/ .
 
 ## License

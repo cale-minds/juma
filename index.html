@@ -255,12 +255,52 @@
 				padding: 0 12px;
 			}
 
+			.ontology-proxy-note {
+				background: #f8fbff;
+				border: 1px solid #dfe7f1;
+				border-radius: 10px;
+				color: #546e7a;
+				font-size: 13px;
+				line-height: 1.45;
+				margin-top: 12px;
+				padding: 10px 12px;
+			}
+
+			.ontology-proxy-note code {
+				background: #eef5ff;
+				border-radius: 6px;
+				color: #1565c0;
+				padding: 2px 6px;
+			}
+
 			.ontology-card {
 				background: #ffffff;
 				border: 1px solid #dfe5ee;
 				border-radius: 12px;
 				box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 				padding: 18px;
+			}
+
+			.ontology-card-header {
+				align-items: flex-start;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 12px;
+				justify-content: space-between;
+				margin-bottom: 14px;
+			}
+
+			.ontology-card-title {
+				color: #263238;
+				font-size: 18px;
+				font-weight: 600;
+				margin: 0;
+			}
+
+			.ontology-card-subtitle {
+				color: #607d8b;
+				font-size: 13px;
+				margin: 4px 0 0;
 			}
 
 			.ontology-form {
@@ -289,7 +329,9 @@
 			}
 
 			.ontology-form .btn,
-			.ontology-list .btn {
+			.ontology-list .btn,
+			.ontology-catalog .btn,
+			.ontology-pagination .btn {
 				border-radius: 8px;
 				font-weight: 500;
 				height: 40px;
@@ -309,6 +351,66 @@
 				overflow: hidden;
 				text-overflow: ellipsis;
 				white-space: nowrap;
+			}
+
+			.ontology-catalog {
+				display: grid;
+				gap: 12px;
+				grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			}
+
+			.ontology-catalog-item {
+				background: #fbfdff;
+				border: 1px solid #dfe7f1;
+				border-radius: 12px;
+				display: grid;
+				gap: 12px;
+				grid-template-columns: minmax(0, 1fr) auto;
+				padding: 14px;
+			}
+
+			.ontology-catalog-title {
+				color: #263238;
+				font-size: 15px;
+				font-weight: 600;
+				margin: 0 0 6px;
+			}
+
+			.ontology-catalog-meta {
+				color: #607d8b;
+				display: grid;
+				font-size: 13px;
+				gap: 4px;
+			}
+
+			.ontology-catalog-meta a {
+				color: #1565c0;
+				overflow-wrap: anywhere;
+			}
+
+			.ontology-catalog-actions {
+				align-items: flex-start;
+				display: flex;
+				gap: 8px;
+			}
+
+			.ontology-catalog-import {
+				background: #1976d2;
+				border: 0;
+				border-radius: 50%;
+				color: #ffffff;
+				font-size: 22px;
+				font-weight: 600;
+				height: 40px;
+				line-height: 38px;
+				padding: 0;
+				text-align: center;
+				width: 40px;
+			}
+
+			.ontology-catalog-import:hover {
+				background: #1565c0;
+				color: #ffffff;
 			}
 
 			.ontology-list {
@@ -377,6 +479,32 @@
 				flex-wrap: wrap;
 				gap: 8px;
 				justify-content: flex-end;
+			}
+
+			.ontology-pagination {
+				align-items: center;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				justify-content: space-between;
+				padding-top: 4px;
+			}
+
+			.ontology-pagination-info {
+				color: #607d8b;
+				font-size: 13px;
+			}
+
+			.ontology-pagination-actions {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 6px;
+			}
+
+			.ontology-pagination .btn.is-active {
+				background: #1976d2;
+				border-color: #1976d2;
+				color: #ffffff;
 			}
 
 			.mapping-toolbar {
@@ -888,9 +1016,26 @@
 						<button id="saveOntologyButton" type="submit" class="btn btn-primary">Import</button>
 						<button id="resetOntologyForm" type="button" class="btn btn-default">Cancel</button>
 					</form>
+					<p class="ontology-proxy-note">Published deployments use Juma's serverless ontology proxy automatically. For local file usage, run <code>node ontology-proxy-server.js</code>. Public proxies are still used only as last-resort demo fallbacks.</p>
 				</section>
 
 				<section class="ontology-card">
+					<div class="ontology-card-header">
+						<div>
+							<h2 class="ontology-card-title">Quick Import Catalog</h2>
+							<p class="ontology-card-subtitle">Import common vocabularies directly into autocomplete suggestions.</p>
+						</div>
+					</div>
+					<div id="ontologyCatalog" class="ontology-catalog"></div>
+				</section>
+
+				<section class="ontology-card">
+					<div class="ontology-card-header">
+						<div>
+							<h2 class="ontology-card-title">Imported Ontologies</h2>
+							<p class="ontology-card-subtitle">Review, reload, edit, or remove imported ontology indexes.</p>
+						</div>
+					</div>
 					<div id="ontologyList" class="ontology-list"></div>
 				</section>
 			</div>
@@ -1063,6 +1208,8 @@
 		  var autosaveEnabled = true;
 		  var isRestoringWorkspace = false;
       var ontologyState = {ontologies: []};
+      var ontologyListPage = 1;
+      var ONTOLOGY_LIST_PAGE_SIZE = 5;
       var selectedOntologyFile = null;
       var ontologyAutocompleteState = {
         field: null,
@@ -1072,6 +1219,44 @@
         replaceStart: 0,
         replaceEnd: 0
       };
+      var ONTOLOGY_CATALOG = [
+        {
+          name: 'FOAF',
+          prefix: 'foaf',
+          url: 'http://xmlns.com/foaf/0.1/',
+          documentation: 'https://xmlns.com/foaf/spec/'
+        },
+        {
+          name: 'Dublin Core Terms',
+          prefix: 'dbc',
+          url: 'http://purl.org/dc/terms/',
+          documentation: 'https://www.dublincore.org/specifications/dublin-core/dcmi-terms/'
+        },
+        {
+          name: 'Dublin Core Elements',
+          prefix: 'dc',
+          url: 'http://purl.org/dc/elements/1.1/',
+          documentation: 'https://www.dublincore.org/specifications/dublin-core/dces/'
+        },
+        {
+          name: 'W3C Organization Ontology',
+          prefix: 'org',
+          url: 'http://www.w3.org/ns/org#',
+          documentation: 'https://www.w3.org/TR/vocab-org/'
+        },
+        {
+          name: 'SKOS',
+          prefix: 'skos',
+          url: 'http://www.w3.org/2004/02/skos/core#',
+          documentation: 'https://www.w3.org/TR/skos-reference/'
+        },
+        {
+          name: 'DBpedia Ontology',
+          prefix: 'dbo',
+          url: 'https://mappings.dbpedia.org/server/ontology/dbpedia.owl',
+          documentation: 'https://mappings.dbpedia.org/server/ontology/classes/'
+        }
+      ];
 
 		  var activeDialogResolve = null;
 		  var activeDialogKind = 'alert';
@@ -1738,6 +1923,34 @@
         }));
       }
 
+      function renderOntologyCatalog() {
+        var $catalog = $('#ontologyCatalog');
+        if (!$catalog.length) {
+          return;
+        }
+
+        var html = '';
+        for (var i = 0; i < ONTOLOGY_CATALOG.length; i++) {
+          var item = ONTOLOGY_CATALOG[i];
+          var imported = !!findOntologyByPrefix(item.prefix);
+          html += '<article class="ontology-catalog-item" data-prefix="' + escapeHtml(item.prefix) + '">' +
+            '<div>' +
+              '<h3 class="ontology-catalog-title">' + escapeHtml(item.name) + '</h3>' +
+              '<div class="ontology-catalog-meta">' +
+                '<span><strong>Prefix:</strong> ' + escapeHtml(item.prefix) + '</span>' +
+                '<span><strong>URL:</strong> ' + escapeHtml(item.url) + '</span>' +
+                '<span><strong>Documentation:</strong> <a href="' + escapeHtml(item.documentation) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(item.documentation) + '</a></span>' +
+                (imported ? '<span class="ontology-prefix-pill">Imported</span>' : '') +
+              '</div>' +
+            '</div>' +
+            '<div class="ontology-catalog-actions">' +
+              '<button type="button" class="btn ontology-catalog-import" data-action="catalog-import" aria-label="Import ' + escapeHtml(item.name) + '" title="' + escapeHtml(imported ? 'Update ' + item.name : 'Import ' + item.name) + '">+</button>' +
+            '</div>' +
+          '</article>';
+        }
+        $catalog.html(html);
+      }
+
       function findOntologyById(id) {
         for (var i = 0; i < ontologyState.ontologies.length; i++) {
           if (ontologyState.ontologies[i].id === id) {
@@ -1767,6 +1980,36 @@
         $('#saveOntologyButton').text('Import');
       }
 
+      function getOntologyImportMethodLabel(method, source) {
+        if (method == 'direct') {
+          return 'Direct access';
+        }
+        if (method == 'jumaProxy' || method == 'localDevelopmentProxy') {
+          return 'Juma proxy';
+        }
+        if (method == 'allOrigins') {
+          return 'AllOrigins';
+        }
+        if (method == 'corsProxyIo') {
+          return 'CorsProxy.io';
+        }
+        if (method == 'file' || source == 'file') {
+          return 'Local file';
+        }
+        return 'URL';
+      }
+
+      function getPaginationPages(currentPage, totalPages) {
+        var pages = [];
+        var start = Math.max(1, currentPage - 2);
+        var end = Math.min(totalPages, start + 4);
+        start = Math.max(1, end - 4);
+        for (var i = start; i <= end; i++) {
+          pages.push(i);
+        }
+        return pages;
+      }
+
       function renderOntologyList() {
         var $list = $('#ontologyList');
         if (!$list.length) {
@@ -1776,16 +2019,25 @@
         if (!ontologyState.ontologies.length) {
           $list.html('<p class="ontology-empty">No ontologies imported yet.</p>');
           setOntologyStatus('No ontologies');
+          ontologyListPage = 1;
+          renderOntologyCatalog();
           return;
         }
 
+        var totalItems = ontologyState.ontologies.length;
+        var totalPages = Math.max(1, Math.ceil(totalItems / ONTOLOGY_LIST_PAGE_SIZE));
+        ontologyListPage = Math.min(Math.max(ontologyListPage, 1), totalPages);
+        var startIndex = (ontologyListPage - 1) * ONTOLOGY_LIST_PAGE_SIZE;
+        var endIndex = Math.min(startIndex + ONTOLOGY_LIST_PAGE_SIZE, totalItems);
+        var pageItems = ontologyState.ontologies.slice(startIndex, endIndex);
         var html = '';
-        for (var i = 0; i < ontologyState.ontologies.length; i++) {
-          var ontology = ontologyState.ontologies[i];
+        for (var i = 0; i < pageItems.length; i++) {
+          var ontology = pageItems[i];
           var classesCount = (ontology.classes || []).length;
           var propertiesCount = (ontology.properties || []).length;
           var lastLoaded = ontology.lastLoadedAt ? new Date(ontology.lastLoadedAt).toLocaleString() : 'not loaded';
           var source = ontology.source === 'file' ? 'Local file' : 'URL';
+          var importMethod = getOntologyImportMethodLabel(ontology.importMethod, ontology.source);
           html += '<article class="ontology-list-item" data-id="' + escapeHtml(ontology.id) + '">' +
             '<div class="ontology-list-main">' +
               '<h2 class="ontology-list-title">' +
@@ -1797,6 +2049,7 @@
                 '<span>' + classesCount + ' classes</span>' +
                 '<span>' + propertiesCount + ' properties</span>' +
                 '<span>' + escapeHtml(source) + '</span>' +
+                '<span>Method: ' + escapeHtml(importMethod) + '</span>' +
                 '<span>Loaded: ' + escapeHtml(lastLoaded) + '</span>' +
               '</div>' +
             '</div>' +
@@ -1807,8 +2060,25 @@
             '</div>' +
           '</article>';
         }
+
+        html += '<div class="ontology-pagination">' +
+          '<span class="ontology-pagination-info">Showing ' + (startIndex + 1) + '-' + endIndex + ' of ' + totalItems + '</span>' +
+          '<div class="ontology-pagination-actions">' +
+            '<button type="button" class="btn btn-default" data-page="' + (ontologyListPage - 1) + '"' + (ontologyListPage === 1 ? ' disabled' : '') + '>Previous</button>';
+
+        var pages = getPaginationPages(ontologyListPage, totalPages);
+        for (var pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+          var page = pages[pageIndex];
+          html += '<button type="button" class="btn btn-default' + (page === ontologyListPage ? ' is-active' : '') + '" data-page="' + page + '">' + page + '</button>';
+        }
+
+        html += '<button type="button" class="btn btn-default" data-page="' + (ontologyListPage + 1) + '"' + (ontologyListPage === totalPages ? ' disabled' : '') + '>Next</button>' +
+          '</div>' +
+        '</div>';
+
         $list.html(html);
         setOntologyStatus(ontologyState.ontologies.length + ' ontologies');
+        renderOntologyCatalog();
       }
 
       function uniqueArray(values) {
@@ -2373,6 +2643,149 @@
         return finalizeParseContext(context);
       }
 
+      function getJsonLdValues(value) {
+        if (value == null) {
+          return [];
+        }
+        if (Array.isArray(value)) {
+          var result = [];
+          for (var i = 0; i < value.length; i++) {
+            result = result.concat(getJsonLdValues(value[i]));
+          }
+          return result;
+        }
+        return [value];
+      }
+
+      function getJsonLdText(value) {
+        var values = getJsonLdValues(value);
+        for (var i = 0; i < values.length; i++) {
+          if (typeof values[i] === 'string') {
+            return values[i];
+          }
+          if (values[i] && typeof values[i]['@value'] === 'string') {
+            return values[i]['@value'];
+          }
+        }
+        return '';
+      }
+
+      function getJsonLdContextPrefixes(json, prefix, url) {
+        var prefixes = {};
+        prefixes[prefix] = url;
+        var context = json && json['@context'];
+        if (!context || typeof context !== 'object' || Array.isArray(context)) {
+          return prefixes;
+        }
+
+        for (var key in context) {
+          if (!context.hasOwnProperty(key)) {
+            continue;
+          }
+          var value = context[key];
+          if (typeof value === 'string' && /^[a-z][a-z0-9+.-]*:\/\//i.test(value)) {
+            prefixes[key] = value;
+          } else if (value && typeof value['@id'] === 'string' && /^[a-z][a-z0-9+.-]*:\/\//i.test(value['@id'])) {
+            prefixes[key] = value['@id'];
+          }
+        }
+        return prefixes;
+      }
+
+      function expandJsonLdIri(value, prefixes, baseUrl) {
+        if (value && typeof value === 'object') {
+          value = value['@id'] || value.id || '';
+        }
+        if (typeof value !== 'string') {
+          return '';
+        }
+        value = value.replace(/^\s+|\s+$/g, '');
+        if (!value || value.indexOf('_:') === 0 || value.charAt(0) === '@') {
+          return '';
+        }
+        return expandOntologyTerm(value, prefixes, baseUrl) || resolveRelativeIri(value, baseUrl);
+      }
+
+      function parseJsonLdOntology(text, prefix, url) {
+        var json;
+        try {
+          json = JSON.parse(text);
+        } catch (error) {
+          return {classes: [], properties: []};
+        }
+
+        var root = Array.isArray(json) ? {'@graph': json} : json;
+        var prefixes = getJsonLdContextPrefixes(root, prefix, url);
+        var context = createParseContext(prefix, url, prefixes);
+        var entries = [];
+        entries = entries.concat(getJsonLdValues(root.defines));
+        entries = entries.concat(getJsonLdValues(root['@graph']));
+
+        if (!entries.length && root['@id']) {
+          entries.push(root);
+        }
+
+        for (var i = 0; i < entries.length; i++) {
+          var item = entries[i];
+          if (!item || typeof item !== 'object') {
+            continue;
+          }
+
+          var iri = expandJsonLdIri(item['@id'] || item.id, context.prefixes, url);
+          if (!iri) {
+            continue;
+          }
+
+          var types = getJsonLdValues(item['@type']);
+          var kind = null;
+          for (var t = 0; t < types.length && !kind; t++) {
+            kind = ontologyKindFromTypeIri(expandJsonLdIri(types[t], context.prefixes, url));
+          }
+
+          var entity = null;
+          if (kind === 'class') {
+            entity = addClassEntity(context, iri);
+          } else if (kind) {
+            entity = addPropertyEntity(context, iri, kind);
+          }
+
+          if (!entity) {
+            continue;
+          }
+
+          var label = getJsonLdText(item.label || item['rdfs:label']);
+          var comment = getJsonLdText(item.comment || item['rdfs:comment'] || item.description);
+          if (label) {
+            entity.label = label;
+          }
+          if (comment) {
+            entity.comment = comment;
+          }
+
+          if (entity.domain) {
+            var domains = getJsonLdValues(item.domain || item['rdfs:domain']);
+            for (var d = 0; d < domains.length; d++) {
+              var domain = expandJsonLdIri(domains[d], context.prefixes, url);
+              if (domain) {
+                entity.domain.push(domain);
+              }
+            }
+          }
+
+          if (entity.range) {
+            var ranges = getJsonLdValues(item.range || item['rdfs:range']);
+            for (var r = 0; r < ranges.length; r++) {
+              var range = expandJsonLdIri(ranges[r], context.prefixes, url);
+              if (range) {
+                entity.range.push(range);
+              }
+            }
+          }
+        }
+
+        return finalizeParseContext(context);
+      }
+
       function mergeParsedOntology(primary, secondary) {
         var context = createParseContext('__merged__', '', {});
         function mergeClass(item) {
@@ -2407,9 +2820,13 @@
       function parseOntologyText(text, prefix, url, contentType) {
         var parsed = {classes: [], properties: []};
         var looksXml = /^\s*</.test(text) || /xml|rdf\+xml|owl\+xml/i.test(contentType || '');
+        var looksJson = /^\s*[\[{]/.test(text) || /json|ld\+json/i.test(contentType || '');
 
         if (looksXml) {
           parsed = mergeParsedOntology(parsed, parseXmlOntology(text, prefix, url));
+        }
+        if (looksJson) {
+          parsed = mergeParsedOntology(parsed, parseJsonLdOntology(text, prefix, url));
         }
         parsed = mergeParsedOntology(parsed, parseTurtleOntology(text, prefix, url));
 
@@ -2428,32 +2845,145 @@
         return parsed;
       }
 
-      function fetchOntology(prefix, url) {
-        return fetch(url, {
-          headers: {
-            Accept: 'text/turtle, application/rdf+xml, application/owl+xml, application/xml, text/xml, */*'
+      var ONTOLOGY_URL_IMPORT_FAILURE_MESSAGE = 'Unable to import this ontology from the provided URL. The application tried direct access, the Juma proxy, AllOrigins, and CorsProxy.io, but all attempts failed. Please download the ontology file manually and import it using the file upload option.';
+      var ONTOLOGY_METADATA_ONLY_MESSAGE = 'The URL was loaded successfully, but it returned only ontology metadata and no classes or properties. Please use a URL that points to the full OWL/RDF/Turtle ontology document, or import the ontology file manually using the file upload option.';
+
+      function isLikelyOntologyMetadataDocument(text, contentType) {
+        var value = text || '';
+        var type = contentType || '';
+        var looksRdf = /text\/turtle|rdf\+xml|ld\+json|n-triples|text\/plain/i.test(type) ||
+          /^\s*(?:@prefix|prefix|<\?xml|<rdf:|\{|\[)/i.test(value);
+        var hasOntologyMetadata = /owl:\s*Ontology|[#\/]Ontology\b|voaf[#\/]Vocabulary|preferredNamespace(?:Prefix|Uri)|rdf:type\s+[A-Za-z][\w-]*:Vocabulary|rdf:type\s+[A-Za-z][\w-]*:Ontology/i.test(value);
+        return looksRdf && hasOntologyMetadata;
+      }
+
+      function createStopFallbackError(message) {
+        var error = new Error(message);
+        error.stopOntologyFallbacks = true;
+        return error;
+      }
+
+      function getJumaOntologyProxyUrl(ontologyUrl) {
+        var isHttp = /^https?:$/.test(window.location.protocol);
+        var isLocalHttp = isHttp &&
+          /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(window.location.hostname || '');
+        var proxyOrigin = 'http://localhost:8787';
+        var proxyPath = '/ontology-proxy';
+
+        if (isHttp) {
+          proxyOrigin = window.location.protocol + '//' + window.location.host;
+          proxyPath = isLocalHttp && (window.location.port === '8787' || !window.location.port) ? '/ontology-proxy' : '/api/ontology-proxy';
+        }
+
+        if (isLocalHttp) {
+          proxyOrigin = window.location.protocol + '//' + window.location.host;
+        }
+        return proxyOrigin + proxyPath + '?url=' + encodeURIComponent(ontologyUrl);
+      }
+
+      function fetchOntologyWithFallbacks(ontologyUrl, parseContent) {
+        var acceptHeader = 'text/turtle, application/rdf+xml, application/ld+json, application/n-triples, text/plain, */*';
+        var attempts = [
+          {
+            name: 'direct',
+            url: ontologyUrl,
+            successMessage: 'Ontology imported successfully using direct access.'
+          },
+          {
+            name: 'jumaProxy',
+            url: getJumaOntologyProxyUrl(ontologyUrl),
+            successMessage: 'Ontology imported successfully using the Juma proxy.'
+          },
+          {
+            name: 'allOrigins',
+            url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(ontologyUrl),
+            successMessage: 'Ontology imported successfully using AllOrigins.'
+          },
+          {
+            name: 'corsProxyIo',
+            url: 'https://corsproxy.io/?url=' + encodeURIComponent(ontologyUrl),
+            successMessage: 'Ontology imported successfully using CorsProxy.io.'
           }
-        }).then(function(response) {
-          if (!response.ok) {
-            throw new Error('HTTP ' + response.status);
+        ];
+        var errors = [];
+
+        function tryAttempt(index) {
+          if (index >= attempts.length) {
+            var finalError = new Error(ONTOLOGY_URL_IMPORT_FAILURE_MESSAGE);
+            finalError.details = errors;
+            throw finalError;
           }
-          var contentType = response.headers.get('content-type') || '';
-          return response.text().then(function(text) {
-            var parsed = parseOntologyText(text, prefix, url, contentType);
-            if (!parsed.classes.length && !parsed.properties.length) {
-              throw new Error('No ontology classes or properties were found.');
+
+          var attempt = attempts[index];
+          return fetch(attempt.url, {
+            credentials: 'omit',
+            headers: {
+              Accept: acceptHeader
             }
-            return {
-              prefix: prefix,
-              url: url,
-              source: 'url',
-              label: prefix,
-              classes: parsed.classes,
-              properties: parsed.properties,
-              lastLoadedAt: new Date().toISOString(),
-              status: 'loaded'
-            };
+          }).then(function(response) {
+            if (!response.ok) {
+              throw new Error(attempt.name + ' failed with status ' + response.status);
+            }
+            var contentType = response.headers.get('content-type') || '';
+            return response.text().then(function(content) {
+              if (!content || !content.replace(/^\s+|\s+$/g, '')) {
+                throw new Error(attempt.name + ' returned empty content');
+              }
+              var parsed = null;
+              if (parseContent) {
+                parsed = parseContent(content, contentType, attempt);
+              }
+              return {
+                content: content,
+                contentType: contentType,
+                parsed: parsed,
+                source: attempt.name,
+                message: attempt.successMessage
+              };
+            });
+          }).catch(function(error) {
+            errors.push({
+              source: attempt.name,
+              message: error.message
+            });
+            if (window.console && console.warn) {
+              console.warn('Ontology import attempt failed: ' + attempt.name, error);
+            }
+            if (error.stopOntologyFallbacks) {
+              error.details = errors;
+              throw error;
+            }
+            return tryAttempt(index + 1);
           });
+        }
+
+        return tryAttempt(0);
+      }
+
+      function fetchOntology(prefix, url) {
+        return fetchOntologyWithFallbacks(url, function(content, contentType, attempt) {
+          var parsed = parseOntologyText(content, prefix, url, contentType);
+          if (!parsed.classes.length && !parsed.properties.length) {
+            if (isLikelyOntologyMetadataDocument(content, contentType)) {
+              throw createStopFallbackError(ONTOLOGY_METADATA_ONLY_MESSAGE);
+            }
+            throw new Error(attempt.name + ' returned content that could not be parsed as an ontology');
+          }
+          return parsed;
+        }).then(function(result) {
+          var parsed = result.parsed;
+          return {
+            prefix: prefix,
+            url: url,
+            source: 'url',
+            importMethod: result.source,
+            importMessage: result.message,
+            label: prefix,
+            classes: parsed.classes,
+            properties: parsed.properties,
+            lastLoadedAt: new Date().toISOString(),
+            status: 'loaded'
+          };
         });
       }
 
@@ -2471,6 +3001,8 @@
                 prefix: prefix,
                 url: effectiveBase || ('local file: ' + file.name),
                 source: 'file',
+                importMethod: 'file',
+                importMessage: 'Ontology imported successfully using local file upload.',
                 fileName: file.name,
                 label: prefix,
                 classes: parsed.classes,
@@ -2492,6 +3024,84 @@
       function buildOntologyRecord(imported, existingId) {
         imported.id = existingId || createOntologyId();
         return imported;
+      }
+
+      function getCatalogOntology(prefix) {
+        var normalized = normalizeOntologyPrefix(prefix).toLowerCase();
+        for (var i = 0; i < ONTOLOGY_CATALOG.length; i++) {
+          if (ONTOLOGY_CATALOG[i].prefix.toLowerCase() === normalized) {
+            return ONTOLOGY_CATALOG[i];
+          }
+        }
+        return null;
+      }
+
+      function replaceOntologyRecord(record, existingId) {
+        if (existingId) {
+          for (var i = 0; i < ontologyState.ontologies.length; i++) {
+            if (ontologyState.ontologies[i].id === existingId) {
+              ontologyState.ontologies[i] = record;
+              return;
+            }
+          }
+        }
+        ontologyState.ontologies.push(record);
+        ontologyListPage = Math.ceil(ontologyState.ontologies.length / ONTOLOGY_LIST_PAGE_SIZE);
+      }
+
+      function setCatalogImportButtonState(prefix, isImporting) {
+        $('#ontologyCatalog .ontology-catalog-item').filter(function() {
+          return $(this).attr('data-prefix') === prefix;
+        }).find('button[data-action="catalog-import"]')
+          .prop('disabled', !!isImporting)
+          .text(isImporting ? '...' : '+');
+      }
+
+      function importCatalogOntology(prefix) {
+        var item = getCatalogOntology(prefix);
+        if (!item) {
+          return;
+        }
+
+        var existing = findOntologyByPrefix(item.prefix);
+        var startImport = function() {
+          setCatalogImportButtonState(item.prefix, true);
+          setOntologyStatus('Importing ' + item.prefix + ': from catalog');
+          fetchOntology(item.prefix, item.url).then(function(imported) {
+            imported.label = item.name;
+            imported.documentation = item.documentation;
+            var record = buildOntologyRecord(imported, existing ? existing.id : null);
+            replaceOntologyRecord(record, existing ? existing.id : null);
+            saveOntologyState();
+            renderOntologyList();
+            resetOntologyForm();
+            setOntologyStatus(record.importMessage || ('Imported ' + record.prefix + ': ' + record.classes.length + ' classes, ' + record.properties.length + ' properties'));
+          }).catch(function(error) {
+            showMaterialAlert(error.message || ONTOLOGY_URL_IMPORT_FAILURE_MESSAGE, {
+              title: 'Ontology import failed',
+              danger: true,
+              icon: '!'
+            });
+            setOntologyStatus('Import failed');
+          }).then(function() {
+            setCatalogImportButtonState(item.prefix, false);
+          });
+        };
+
+        if (existing) {
+          showMaterialConfirm(item.prefix + ': is already imported. Replace it with the catalog version?', {
+            title: 'Replace ontology?',
+            confirmText: 'Replace',
+            cancelText: 'Cancel'
+          }).then(function(confirmed) {
+            if (confirmed) {
+              startImport();
+            }
+          });
+          return;
+        }
+
+        startImport();
       }
 
       function validateOntologyForm(prefix, url, editingId, file) {
@@ -2559,22 +3169,13 @@
         var importPromise = file ? readOntologyFile(prefix, url, file) : fetchOntology(prefix, url);
         importPromise.then(function(imported) {
           var record = buildOntologyRecord(imported, editingId || null);
-          if (editingId) {
-            for (var i = 0; i < ontologyState.ontologies.length; i++) {
-              if (ontologyState.ontologies[i].id === editingId) {
-                ontologyState.ontologies[i] = record;
-                break;
-              }
-            }
-          } else {
-            ontologyState.ontologies.push(record);
-          }
+          replaceOntologyRecord(record, editingId || null);
           saveOntologyState();
           renderOntologyList();
           resetOntologyForm();
-          setOntologyStatus('Imported ' + record.prefix + ': ' + record.classes.length + ' classes, ' + record.properties.length + ' properties');
+          setOntologyStatus(record.importMessage || ('Imported ' + record.prefix + ': ' + record.classes.length + ' classes, ' + record.properties.length + ' properties'));
         }).catch(function(error) {
-          showMaterialAlert('Could not load or interpret this ontology. For remote URLs, the server may block browser requests by CORS. In that case, download the ontology and import it as a local file. Details: ' + error.message, {
+          showMaterialAlert(error.message || ONTOLOGY_URL_IMPORT_FAILURE_MESSAGE, {
             title: 'Ontology import failed',
             danger: true,
             icon: '!'
@@ -2617,17 +3218,12 @@
         setOntologyStatus('Reloading ' + ontology.prefix + ':');
         fetchOntology(ontology.prefix, ontology.url).then(function(imported) {
           var record = buildOntologyRecord(imported, ontology.id);
-          for (var i = 0; i < ontologyState.ontologies.length; i++) {
-            if (ontologyState.ontologies[i].id === ontology.id) {
-              ontologyState.ontologies[i] = record;
-              break;
-            }
-          }
+          replaceOntologyRecord(record, ontology.id);
           saveOntologyState();
           renderOntologyList();
-          setOntologyStatus('Reloaded ' + record.prefix + ':');
+          setOntologyStatus(record.importMessage || ('Reloaded ' + record.prefix + ':'));
         }).catch(function(error) {
-          showMaterialAlert('Could not reload this ontology. Details: ' + error.message, {
+          showMaterialAlert(error.message || ONTOLOGY_URL_IMPORT_FAILURE_MESSAGE, {
             title: 'Reload failed',
             danger: true,
             icon: '!'
@@ -2671,6 +3267,18 @@
         $('#ontologyFile').on('change', function(event) {
           selectedOntologyFile = event.target.files && event.target.files[0] ? event.target.files[0] : null;
           $('#ontologyFileName').text(selectedOntologyFile ? selectedOntologyFile.name : '');
+        });
+        $('#ontologyCatalog').on('click', 'button[data-action="catalog-import"]', function() {
+          var prefix = $(this).closest('.ontology-catalog-item').attr('data-prefix');
+          importCatalogOntology(prefix);
+        });
+        $('#ontologyList').on('click', 'button[data-page]', function() {
+          var page = parseInt($(this).attr('data-page'), 10);
+          if (isNaN(page)) {
+            return;
+          }
+          ontologyListPage = page;
+          renderOntologyList();
         });
         $('#ontologyList').on('click', 'button[data-action]', function() {
           var id = $(this).closest('.ontology-list-item').attr('data-id');
