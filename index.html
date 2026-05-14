@@ -213,6 +213,172 @@
 				margin-right: 6px;
 			}
 
+			.ontology-imports-pane {
+				box-sizing: border-box;
+				display: flex;
+				flex-direction: column;
+				gap: 16px;
+				height: 100%;
+				overflow: auto;
+				padding: 20px;
+			}
+
+			.ontology-imports-header {
+				align-items: flex-start;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 16px;
+				justify-content: space-between;
+			}
+
+			.ontology-imports-title {
+				color: #263238;
+				font-size: 24px;
+				font-weight: 600;
+				margin: 0;
+			}
+
+			.ontology-imports-subtitle {
+				color: #607d8b;
+				font-size: 14px;
+				margin: 4px 0 0;
+			}
+
+			.ontology-status {
+				background: #eef2f7;
+				border-radius: 999px;
+				color: #607d8b;
+				display: inline-flex;
+				font-size: 13px;
+				line-height: 24px;
+				min-height: 24px;
+				padding: 0 12px;
+			}
+
+			.ontology-card {
+				background: #ffffff;
+				border: 1px solid #dfe5ee;
+				border-radius: 12px;
+				box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+				padding: 18px;
+			}
+
+			.ontology-form {
+				align-items: flex-end;
+				display: grid;
+				gap: 12px;
+				grid-template-columns: minmax(140px, 180px) minmax(240px, 1fr) auto auto auto;
+			}
+
+			.ontology-form .form-group {
+				margin-bottom: 0;
+			}
+
+			.ontology-form label {
+				color: #455a64;
+				font-size: 13px;
+				font-weight: 600;
+				margin-bottom: 6px;
+			}
+
+			.ontology-form .form-control {
+				border-color: #d7dee8;
+				border-radius: 8px;
+				box-shadow: none;
+				height: 40px;
+			}
+
+			.ontology-form .btn,
+			.ontology-list .btn {
+				border-radius: 8px;
+				font-weight: 500;
+				height: 40px;
+			}
+
+			.ontology-form .btn-primary {
+				background: #1976d2;
+				border-color: #1976d2;
+			}
+
+			.ontology-file-name {
+				color: #607d8b;
+				display: block;
+				font-size: 12px;
+				margin-top: 6px;
+				max-width: 220px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.ontology-list {
+				display: grid;
+				gap: 12px;
+			}
+
+			.ontology-empty {
+				color: #607d8b;
+				font-size: 15px;
+				margin: 0;
+			}
+
+			.ontology-list-item {
+				align-items: center;
+				background: #ffffff;
+				border: 1px solid #dfe5ee;
+				border-radius: 12px;
+				display: grid;
+				gap: 14px;
+				grid-template-columns: minmax(0, 1fr) auto;
+				padding: 16px;
+			}
+
+			.ontology-list-main {
+				min-width: 0;
+			}
+
+			.ontology-list-title {
+				align-items: center;
+				color: #263238;
+				display: flex;
+				flex-wrap: wrap;
+				font-size: 17px;
+				font-weight: 600;
+				gap: 8px;
+				margin: 0 0 4px;
+			}
+
+			.ontology-prefix-pill {
+				background: #e3f2fd;
+				border-radius: 999px;
+				color: #1565c0;
+				font-size: 13px;
+				line-height: 24px;
+				padding: 0 10px;
+			}
+
+			.ontology-url {
+				color: #607d8b;
+				font-size: 13px;
+				overflow-wrap: anywhere;
+			}
+
+			.ontology-meta {
+				color: #78909c;
+				display: flex;
+				flex-wrap: wrap;
+				font-size: 13px;
+				gap: 10px;
+				margin-top: 8px;
+			}
+
+			.ontology-list-actions {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				justify-content: flex-end;
+			}
+
 			.mapping-toolbar {
 				background: #ffffff;
 				border-radius: 12px;
@@ -301,6 +467,52 @@
 				font-size: 13px;
 				line-height: 24px;
 				padding: 0 10px;
+			}
+
+			.ontology-autocomplete {
+				background: #ffffff;
+				border: 1px solid #dfe5ee;
+				border-radius: 10px;
+				box-shadow: 0 14px 34px rgba(15, 23, 42, 0.18);
+				display: none;
+				max-height: 260px;
+				min-width: 280px;
+				overflow: auto;
+				padding: 6px;
+				position: fixed;
+				z-index: 30000;
+			}
+
+			.ontology-autocomplete.is-visible {
+				display: block;
+			}
+
+			.ontology-autocomplete-item {
+				border-radius: 8px;
+				cursor: pointer;
+				display: grid;
+				gap: 2px;
+				padding: 8px 10px;
+			}
+
+			.ontology-autocomplete-item.is-active,
+			.ontology-autocomplete-item:hover {
+				background: #eef5ff;
+			}
+
+			.ontology-autocomplete-name {
+				color: #263238;
+				font-size: 14px;
+				font-weight: 600;
+			}
+
+			.ontology-autocomplete-detail {
+				color: #607d8b;
+				font-size: 12px;
+				line-height: 1.35;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
 			}
 
 			.mapping-workspace {
@@ -536,6 +748,19 @@
 					min-width: 0;
 				}
 
+				.ontology-imports-pane {
+					padding: 12px;
+				}
+
+				.ontology-form,
+				.ontology-list-item {
+					grid-template-columns: 1fr;
+				}
+
+				.ontology-list-actions {
+					justify-content: flex-start;
+				}
+
 				.toolbar-separator,
 				.toolbar-spacer {
 					display: none;
@@ -566,6 +791,7 @@
 		<ul class="nav nav-tabs" role="tablist">
 			<li role="presentation" class="active"><a href="#tab1" aria-controls="tab1" role="tab" data-toggle="tab">Mapping</a></li>
 			<li role="presentation"><a href="#tab2" aria-controls="tab2" role="tab" data-toggle="tab">R2RML-Mapping</a></li>
+			<li role="presentation"><a href="#tab3" aria-controls="tab3" role="tab" data-toggle="tab">Ontology Imports</a></li>
 		</ul>
 	</header>
 
@@ -632,6 +858,43 @@
 				</div>
 		</div>
 	    </div>
+
+		<div role="tabpanel" class="tab-pane" id="tab3">
+			<div class="ontology-imports-pane">
+				<div class="ontology-imports-header">
+					<div>
+						<h1 class="ontology-imports-title">Ontology Imports</h1>
+						<p class="ontology-imports-subtitle">Manage external ontologies used by R2RML autocomplete suggestions.</p>
+					</div>
+					<span id="ontologyStatus" class="ontology-status"></span>
+				</div>
+
+				<section class="ontology-card">
+					<form id="ontologyForm" class="ontology-form">
+						<input id="ontologyEditingId" type="hidden" />
+						<div class="form-group">
+							<label for="ontologyPrefix">Prefix</label>
+							<input id="ontologyPrefix" type="text" class="form-control" placeholder="dbo" autocomplete="off" />
+						</div>
+						<div class="form-group">
+							<label for="ontologyUrl">Ontology URL or base IRI</label>
+							<input id="ontologyUrl" type="url" class="form-control" placeholder="http://xmlns.com/foaf/0.1/" autocomplete="off" />
+						</div>
+						<div class="form-group">
+							<input id="ontologyFile" type="file" accept=".owl,.rdf,.ttl,.nt,.xml,.n3,text/turtle,application/rdf+xml,application/owl+xml,application/xml,text/xml,text/plain" style="display:none;" />
+							<button id="chooseOntologyFile" type="button" class="btn btn-default">Local file</button>
+							<span id="ontologyFileName" class="ontology-file-name"></span>
+						</div>
+						<button id="saveOntologyButton" type="submit" class="btn btn-primary">Import</button>
+						<button id="resetOntologyForm" type="button" class="btn btn-default">Cancel</button>
+					</form>
+				</section>
+
+				<section class="ontology-card">
+					<div id="ontologyList" class="ontology-list"></div>
+				</section>
+			</div>
+		</div>
 	</div>
 
 	<footer class="app-footer">
@@ -655,6 +918,7 @@
 			</div>
 		</section>
 	</div>
+	<div id="ontologyAutocomplete" class="ontology-autocomplete" role="listbox" aria-label="Ontology suggestions"></div>
 		<xml id="toolbox" style="display: none">  
 		  <category name="Templates" colour="360">
 			<block type="triplemap">
@@ -793,10 +1057,21 @@
         draftXml: 'juma.r2rml.workspace.draftXml',
         savedXml: 'juma.r2rml.workspace.savedXml',
         code: 'juma.r2rml.generatedCode',
-        autosave: 'juma.r2rml.autosaveEnabled'
+        autosave: 'juma.r2rml.autosaveEnabled',
+        ontologies: 'juma.r2rml.ontologies'
 		  };
 		  var autosaveEnabled = true;
 		  var isRestoringWorkspace = false;
+      var ontologyState = {ontologies: []};
+      var selectedOntologyFile = null;
+      var ontologyAutocompleteState = {
+        field: null,
+        input: null,
+        suggestions: [],
+        selectedIndex: 0,
+        replaceStart: 0,
+        replaceEnd: 0
+      };
 
 		  var activeDialogResolve = null;
 		  var activeDialogKind = 'alert';
@@ -1411,6 +1686,1385 @@
 
       function setStorageStatus(message) {
         $('#storageStatus').text(message || '');
+      }
+
+      function setOntologyStatus(message) {
+        $('#ontologyStatus').text(message || '');
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? '' : value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function normalizeOntologyPrefix(prefix) {
+        return (prefix || '').replace(/^\s+|\s+$/g, '').replace(/:$/, '');
+      }
+
+      function normalizeOntologyUrl(url) {
+        return (url || '').replace(/^\s+|\s+$/g, '');
+      }
+
+      function createOntologyId() {
+        return 'ontology-' + Date.now() + '-' + Math.floor(Math.random() * 1000000);
+      }
+
+      function loadOntologyState() {
+        var stored = getStorageValue(localStorage, STORAGE_KEYS.ontologies);
+        if (!stored) {
+          ontologyState = {ontologies: []};
+          renderOntologyList();
+          return;
+        }
+
+        try {
+          var parsed = JSON.parse(stored);
+          ontologyState = {
+            ontologies: Array.isArray(parsed.ontologies) ? parsed.ontologies : []
+          };
+        } catch (e) {
+          ontologyState = {ontologies: []};
+        }
+        renderOntologyList();
+      }
+
+      function saveOntologyState() {
+        setStorageValue(localStorage, STORAGE_KEYS.ontologies, JSON.stringify({
+          ontologies: ontologyState.ontologies
+        }));
+      }
+
+      function findOntologyById(id) {
+        for (var i = 0; i < ontologyState.ontologies.length; i++) {
+          if (ontologyState.ontologies[i].id === id) {
+            return ontologyState.ontologies[i];
+          }
+        }
+        return null;
+      }
+
+      function findOntologyByPrefix(prefix) {
+        var normalized = normalizeOntologyPrefix(prefix).toLowerCase();
+        for (var i = 0; i < ontologyState.ontologies.length; i++) {
+          if ((ontologyState.ontologies[i].prefix || '').toLowerCase() === normalized) {
+            return ontologyState.ontologies[i];
+          }
+        }
+        return null;
+      }
+
+      function resetOntologyForm() {
+        $('#ontologyEditingId').val('');
+        $('#ontologyPrefix').val('');
+        $('#ontologyUrl').val('');
+        $('#ontologyFile').val('');
+        $('#ontologyFileName').text('');
+        selectedOntologyFile = null;
+        $('#saveOntologyButton').text('Import');
+      }
+
+      function renderOntologyList() {
+        var $list = $('#ontologyList');
+        if (!$list.length) {
+          return;
+        }
+
+        if (!ontologyState.ontologies.length) {
+          $list.html('<p class="ontology-empty">No ontologies imported yet.</p>');
+          setOntologyStatus('No ontologies');
+          return;
+        }
+
+        var html = '';
+        for (var i = 0; i < ontologyState.ontologies.length; i++) {
+          var ontology = ontologyState.ontologies[i];
+          var classesCount = (ontology.classes || []).length;
+          var propertiesCount = (ontology.properties || []).length;
+          var lastLoaded = ontology.lastLoadedAt ? new Date(ontology.lastLoadedAt).toLocaleString() : 'not loaded';
+          var source = ontology.source === 'file' ? 'Local file' : 'URL';
+          html += '<article class="ontology-list-item" data-id="' + escapeHtml(ontology.id) + '">' +
+            '<div class="ontology-list-main">' +
+              '<h2 class="ontology-list-title">' +
+                '<span class="ontology-prefix-pill">' + escapeHtml(ontology.prefix) + ':</span>' +
+                '<span>' + escapeHtml(ontology.label || ontology.prefix) + '</span>' +
+              '</h2>' +
+              '<div class="ontology-url">' + escapeHtml(ontology.url) + '</div>' +
+              '<div class="ontology-meta">' +
+                '<span>' + classesCount + ' classes</span>' +
+                '<span>' + propertiesCount + ' properties</span>' +
+                '<span>' + escapeHtml(source) + '</span>' +
+                '<span>Loaded: ' + escapeHtml(lastLoaded) + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="ontology-list-actions">' +
+              '<button type="button" class="btn btn-default" data-action="edit">Edit</button>' +
+              '<button type="button" class="btn btn-default" data-action="reload">Reload</button>' +
+              '<button type="button" class="btn btn-danger" data-action="delete">Delete</button>' +
+            '</div>' +
+          '</article>';
+        }
+        $list.html(html);
+        setOntologyStatus(ontologyState.ontologies.length + ' ontologies');
+      }
+
+      function uniqueArray(values) {
+        var seen = {};
+        var result = [];
+        for (var i = 0; i < (values || []).length; i++) {
+          var value = values[i];
+          if (value && !seen[value]) {
+            seen[value] = true;
+            result.push(value);
+          }
+        }
+        return result;
+      }
+
+      function getOntologyLocalName(iri) {
+        iri = iri || '';
+        var hashIndex = iri.lastIndexOf('#');
+        var slashIndex = iri.lastIndexOf('/');
+        var index = Math.max(hashIndex, slashIndex);
+        var local = index >= 0 ? iri.substring(index + 1) : iri;
+        try {
+          return decodeURIComponent(local);
+        } catch (e) {
+          return local;
+        }
+      }
+
+      function makePrefixedName(prefix, baseUrl, iri) {
+        var local = '';
+        var candidates = [baseUrl || ''];
+        if (baseUrl && /^https:\/\//i.test(baseUrl)) {
+          candidates.push(baseUrl.replace(/^https:\/\//i, 'http://'));
+        } else if (baseUrl && /^http:\/\//i.test(baseUrl)) {
+          candidates.push(baseUrl.replace(/^http:\/\//i, 'https://'));
+        }
+
+        for (var i = 0; i < candidates.length; i++) {
+          var candidate = candidates[i];
+          if (candidate && iri.indexOf(candidate) === 0) {
+            local = iri.substring(candidate.length).replace(/^[#\/]+/, '');
+            break;
+          }
+        }
+
+        if (!local) {
+          local = getOntologyLocalName(iri);
+        }
+        return prefix + ':' + local;
+      }
+
+      function createParseContext(prefix, url, prefixes) {
+        prefixes = prefixes || {};
+        prefixes[prefix] = url;
+        prefixes.rdf = prefixes.rdf || 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+        prefixes.rdfs = prefixes.rdfs || 'http://www.w3.org/2000/01/rdf-schema#';
+        prefixes.owl = prefixes.owl || 'http://www.w3.org/2002/07/owl#';
+        prefixes.xsd = prefixes.xsd || 'http://www.w3.org/2001/XMLSchema#';
+        return {
+          prefix: prefix,
+          url: url,
+          prefixes: prefixes,
+          classesByIri: {},
+          propertiesByIri: {}
+        };
+      }
+
+      function addClassEntity(context, iri) {
+        if (!iri) {
+          return null;
+        }
+        if (!context.classesByIri[iri]) {
+          context.classesByIri[iri] = {
+            iri: iri,
+            prefixedName: makePrefixedName(context.prefix, context.url, iri),
+            label: getOntologyLocalName(iri),
+            comment: ''
+          };
+        }
+        return context.classesByIri[iri];
+      }
+
+      function addPropertyEntity(context, iri, type) {
+        if (!iri) {
+          return null;
+        }
+        if (!context.propertiesByIri[iri]) {
+          context.propertiesByIri[iri] = {
+            iri: iri,
+            prefixedName: makePrefixedName(context.prefix, context.url, iri),
+            type: type || 'property',
+            domain: [],
+            range: [],
+            label: getOntologyLocalName(iri),
+            comment: ''
+          };
+        } else if (type && context.propertiesByIri[iri].type === 'property') {
+          context.propertiesByIri[iri].type = type;
+        }
+        return context.propertiesByIri[iri];
+      }
+
+      function finalizeParseContext(context) {
+        var classes = [];
+        var properties = [];
+        var iri;
+
+        for (iri in context.classesByIri) {
+          if (context.classesByIri.hasOwnProperty(iri)) {
+            classes.push(context.classesByIri[iri]);
+          }
+        }
+        for (iri in context.propertiesByIri) {
+          if (context.propertiesByIri.hasOwnProperty(iri)) {
+            var property = context.propertiesByIri[iri];
+            property.domain = uniqueArray(property.domain);
+            property.range = uniqueArray(property.range);
+            properties.push(property);
+          }
+        }
+
+        classes.sort(function(a, b) {
+          return a.prefixedName.localeCompare(b.prefixedName);
+        });
+        properties.sort(function(a, b) {
+          return a.prefixedName.localeCompare(b.prefixedName);
+        });
+
+        return {
+          classes: classes,
+          properties: properties
+        };
+      }
+
+      function ontologyKindFromTypeIri(typeIri) {
+        if (!typeIri) {
+          return null;
+        }
+        if (/[#\/]Class$/i.test(typeIri)) {
+          return 'class';
+        }
+        if (/[#\/]ObjectProperty$/i.test(typeIri)) {
+          return 'objectProperty';
+        }
+        if (/[#\/]DatatypeProperty$/i.test(typeIri)) {
+          return 'dataProperty';
+        }
+        if (/[#\/]AnnotationProperty$/i.test(typeIri)) {
+          return 'annotationProperty';
+        }
+        if (/[#\/]Property$/i.test(typeIri)) {
+          return 'property';
+        }
+        return null;
+      }
+
+      function resolveRelativeIri(value, baseUrl) {
+        if (!value) {
+          return '';
+        }
+        if (/^[a-z][a-z0-9+.-]*:/i.test(value)) {
+          return value;
+        }
+        if (value.charAt(0) === '#') {
+          return baseUrl.replace(/#.*$/, '') + value;
+        }
+        try {
+          return new URL(value, baseUrl).href;
+        } catch (e) {
+          return value;
+        }
+      }
+
+      function getXmlAttributeByLocalName(element, localName) {
+        if (!element || !element.attributes) {
+          return '';
+        }
+        for (var i = 0; i < element.attributes.length; i++) {
+          if (element.attributes[i].localName === localName) {
+            return element.attributes[i].value;
+          }
+        }
+        return '';
+      }
+
+      function getXmlSubjectIri(element, baseUrl) {
+        var about = getXmlAttributeByLocalName(element, 'about');
+        var id = getXmlAttributeByLocalName(element, 'ID');
+        if (about) {
+          return resolveRelativeIri(about, baseUrl);
+        }
+        if (id) {
+          return resolveRelativeIri('#' + id, baseUrl);
+        }
+        return '';
+      }
+
+      function getXmlResourceIri(element, baseUrl) {
+        var resource = getXmlAttributeByLocalName(element, 'resource') ||
+          getXmlAttributeByLocalName(element, 'about') ||
+          getXmlAttributeByLocalName(element, 'ID');
+        if (!resource) {
+          return '';
+        }
+        if (getXmlAttributeByLocalName(element, 'ID')) {
+          resource = '#' + resource;
+        }
+        return resolveRelativeIri(resource, baseUrl);
+      }
+
+      function getDirectChildElements(element) {
+        var result = [];
+        for (var i = 0; i < element.childNodes.length; i++) {
+          if (element.childNodes[i].nodeType === 1) {
+            result.push(element.childNodes[i]);
+          }
+        }
+        return result;
+      }
+
+      function getXmlElementOntologyKind(element, baseUrl) {
+        var localName = (element.localName || '').toLowerCase();
+        if (localName === 'class') {
+          return 'class';
+        }
+        if (localName === 'objectproperty') {
+          return 'objectProperty';
+        }
+        if (localName === 'datatypeproperty') {
+          return 'dataProperty';
+        }
+        if (localName === 'annotationproperty') {
+          return 'annotationProperty';
+        }
+        if (localName === 'property') {
+          return 'property';
+        }
+
+        var children = getDirectChildElements(element);
+        for (var i = 0; i < children.length; i++) {
+          if ((children[i].localName || '').toLowerCase() === 'type') {
+            var kind = ontologyKindFromTypeIri(getXmlResourceIri(children[i], baseUrl));
+            if (kind) {
+              return kind;
+            }
+          }
+        }
+        return null;
+      }
+
+      function applyXmlEntityMetadata(entity, element, baseUrl) {
+        var children = getDirectChildElements(element);
+        for (var i = 0; i < children.length; i++) {
+          var localName = (children[i].localName || '').toLowerCase();
+          var text = (children[i].textContent || '').replace(/^\s+|\s+$/g, '');
+          if (localName === 'label' && text) {
+            entity.label = text;
+          } else if (localName === 'comment' && text) {
+            entity.comment = text;
+          } else if (localName === 'domain' && entity.domain) {
+            var domain = getXmlResourceIri(children[i], baseUrl);
+            if (domain) {
+              entity.domain.push(domain);
+            }
+          } else if (localName === 'range' && entity.range) {
+            var range = getXmlResourceIri(children[i], baseUrl);
+            if (range) {
+              entity.range.push(range);
+            }
+          }
+        }
+      }
+
+      function parseXmlOntology(text, prefix, url) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(text, 'application/xml');
+        if (doc.getElementsByTagName('parsererror').length) {
+          return {classes: [], properties: []};
+        }
+
+        var context = createParseContext(prefix, url, {});
+        var elements = doc.getElementsByTagName('*');
+        for (var i = 0; i < elements.length; i++) {
+          var element = elements[i];
+          var iri = getXmlSubjectIri(element, url);
+          var kind = getXmlElementOntologyKind(element, url);
+          var entity = null;
+
+          if (!iri || !kind) {
+            continue;
+          }
+
+          if (kind === 'class') {
+            entity = addClassEntity(context, iri);
+          } else {
+            entity = addPropertyEntity(context, iri, kind);
+          }
+
+          if (entity) {
+            applyXmlEntityMetadata(entity, element, url);
+          }
+        }
+        return finalizeParseContext(context);
+      }
+
+      function getTurtlePrefixMap(text, prefix, url) {
+        var prefixes = {};
+        prefixes[prefix] = url;
+        var re = /(?:@prefix|prefix)\s+([A-Za-z][\w-]*|):\s*<([^>]+)>/ig;
+        var match;
+        while ((match = re.exec(text)) != null) {
+          prefixes[match[1]] = match[2];
+        }
+        return prefixes;
+      }
+
+      function splitRdfStatements(text) {
+        var statements = [];
+        var current = '';
+        var inUri = false;
+        var inString = false;
+        var quote = '';
+        var escape = false;
+
+        for (var i = 0; i < text.length; i++) {
+          var ch = text.charAt(i);
+          var next = text.charAt(i + 1);
+          current += ch;
+
+          if (inString) {
+            if (escape) {
+              escape = false;
+            } else if (ch === '\\') {
+              escape = true;
+            } else if (ch === quote) {
+              inString = false;
+            }
+            continue;
+          }
+
+          if (inUri) {
+            if (ch === '>') {
+              inUri = false;
+            }
+            continue;
+          }
+
+          if (ch === '<') {
+            inUri = true;
+          } else if (ch === '"' || ch === "'") {
+            inString = true;
+            quote = ch;
+          } else if (ch === '#') {
+            current = current.substring(0, current.length - 1);
+            while (i + 1 < text.length && text.charAt(i + 1) !== '\n') {
+              i++;
+            }
+            current += '\n';
+          } else if (ch === '.' && /\s/.test(next || '')) {
+            statements.push(current.replace(/^\s+|\s+$/g, ''));
+            current = '';
+          }
+        }
+
+        current = current.replace(/^\s+|\s+$/g, '');
+        if (current) {
+          statements.push(current);
+        }
+        return statements;
+      }
+
+      function splitTopLevel(text, separator) {
+        var parts = [];
+        var current = '';
+        var inUri = false;
+        var inString = false;
+        var quote = '';
+        var escape = false;
+        var bracketDepth = 0;
+
+        for (var i = 0; i < text.length; i++) {
+          var ch = text.charAt(i);
+
+          if (inString) {
+            current += ch;
+            if (escape) {
+              escape = false;
+            } else if (ch === '\\') {
+              escape = true;
+            } else if (ch === quote) {
+              inString = false;
+            }
+            continue;
+          }
+
+          if (inUri) {
+            current += ch;
+            if (ch === '>') {
+              inUri = false;
+            }
+            continue;
+          }
+
+          if (ch === '<') {
+            inUri = true;
+          } else if (ch === '"' || ch === "'") {
+            inString = true;
+            quote = ch;
+          } else if (ch === '[' || ch === '(') {
+            bracketDepth++;
+          } else if (ch === ']' || ch === ')') {
+            bracketDepth = Math.max(0, bracketDepth - 1);
+          }
+
+          if (ch === separator && bracketDepth === 0) {
+            parts.push(current.replace(/^\s+|\s+$/g, ''));
+            current = '';
+          } else {
+            current += ch;
+          }
+        }
+
+        current = current.replace(/^\s+|\s+$/g, '');
+        if (current) {
+          parts.push(current);
+        }
+        return parts;
+      }
+
+      function readFirstToken(text) {
+        text = text.replace(/^\s+/, '');
+        if (!text) {
+          return {token: '', rest: ''};
+        }
+        if (text.charAt(0) === '<') {
+          var uriEnd = text.indexOf('>');
+          return {
+            token: text.substring(0, uriEnd + 1),
+            rest: text.substring(uriEnd + 1).replace(/^\s+/, '')
+          };
+        }
+
+        var match = text.match(/^([^\s]+)\s*([\s\S]*)$/);
+        return {
+          token: match ? match[1] : text,
+          rest: match ? match[2] : ''
+        };
+      }
+
+      function expandOntologyTerm(term, prefixes, baseUrl) {
+        term = (term || '').replace(/^\s+|\s+$/g, '').replace(/[;,]+$/g, '');
+        if (!term) {
+          return '';
+        }
+        if (term === 'a') {
+          return 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
+        }
+        if (term.charAt(0) === '<' && term.charAt(term.length - 1) === '>') {
+          return resolveRelativeIri(term.substring(1, term.length - 1), baseUrl);
+        }
+        if (/^https?:\/\//i.test(term)) {
+          return term;
+        }
+        var prefixed = term.match(/^([A-Za-z][\w-]*|):(.+)$/);
+        if (prefixed) {
+          var base = prefixes[prefixed[1]];
+          return base ? base + prefixed[2] : '';
+        }
+        if (term.charAt(0) === '#') {
+          return resolveRelativeIri(term, baseUrl);
+        }
+        return '';
+      }
+
+      function readLiteralValue(text) {
+        var match = (text || '').match(/"""([\s\S]*?)"""|"((?:\\.|[^"])*)"|'((?:\\.|[^'])*)'/);
+        if (!match) {
+          return '';
+        }
+        return (match[1] || match[2] || match[3] || '').replace(/\\"/g, '"').replace(/\\'/g, "'");
+      }
+
+      function parseTurtleOntology(text, prefix, url) {
+        var prefixes = getTurtlePrefixMap(text, prefix, url);
+        var context = createParseContext(prefix, url, prefixes);
+        var statements = splitRdfStatements(text);
+
+        for (var i = 0; i < statements.length; i++) {
+          var statement = statements[i];
+          if (/^\s*(?:@prefix|prefix|@base|base)\b/i.test(statement)) {
+            continue;
+          }
+
+          var subjectToken = readFirstToken(statement);
+          var subjectIri = expandOntologyTerm(subjectToken.token, context.prefixes, url);
+          if (!subjectIri) {
+            continue;
+          }
+
+          var groups = splitTopLevel(subjectToken.rest.replace(/\.\s*$/, ''), ';');
+          var types = [];
+          var metadata = {
+            label: '',
+            comment: '',
+            domain: [],
+            range: []
+          };
+
+          for (var g = 0; g < groups.length; g++) {
+            var predicateToken = readFirstToken(groups[g]);
+            var predicateIri = expandOntologyTerm(predicateToken.token, context.prefixes, url);
+            var objects = splitTopLevel(predicateToken.rest, ',');
+
+            for (var o = 0; o < objects.length; o++) {
+              var objectValue = objects[o].replace(/^\s+|\s+$/g, '');
+              if (!objectValue) {
+                continue;
+              }
+
+              if (predicateIri === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
+                types.push(expandOntologyTerm(readFirstToken(objectValue).token, context.prefixes, url));
+              } else if (predicateIri === 'http://www.w3.org/2000/01/rdf-schema#label') {
+                metadata.label = metadata.label || readLiteralValue(objectValue);
+              } else if (predicateIri === 'http://www.w3.org/2000/01/rdf-schema#comment') {
+                metadata.comment = metadata.comment || readLiteralValue(objectValue);
+              } else if (predicateIri === 'http://www.w3.org/2000/01/rdf-schema#domain') {
+                metadata.domain.push(expandOntologyTerm(readFirstToken(objectValue).token, context.prefixes, url));
+              } else if (predicateIri === 'http://www.w3.org/2000/01/rdf-schema#range') {
+                metadata.range.push(expandOntologyTerm(readFirstToken(objectValue).token, context.prefixes, url));
+              }
+            }
+          }
+
+          var kind = null;
+          for (var t = 0; t < types.length && !kind; t++) {
+            kind = ontologyKindFromTypeIri(types[t]);
+          }
+
+          var entity = null;
+          if (kind === 'class') {
+            entity = addClassEntity(context, subjectIri);
+          } else if (kind) {
+            entity = addPropertyEntity(context, subjectIri, kind);
+          }
+
+          if (entity) {
+            if (metadata.label) {
+              entity.label = metadata.label;
+            }
+            if (metadata.comment) {
+              entity.comment = metadata.comment;
+            }
+            if (entity.domain) {
+              entity.domain = entity.domain.concat(metadata.domain);
+            }
+            if (entity.range) {
+              entity.range = entity.range.concat(metadata.range);
+            }
+          }
+        }
+
+        return finalizeParseContext(context);
+      }
+
+      function mergeParsedOntology(primary, secondary) {
+        var context = createParseContext('__merged__', '', {});
+        function mergeClass(item) {
+          var entity = addClassEntity(context, item.iri);
+          entity.prefixedName = item.prefixedName;
+          entity.label = item.label;
+          entity.comment = item.comment;
+        }
+        function mergeProperty(item) {
+          var entity = addPropertyEntity(context, item.iri, item.type);
+          entity.prefixedName = item.prefixedName;
+          entity.label = item.label;
+          entity.comment = item.comment;
+          entity.domain = entity.domain.concat(item.domain || []);
+          entity.range = entity.range.concat(item.range || []);
+        }
+        for (var i = 0; i < (primary.classes || []).length; i++) {
+          mergeClass(primary.classes[i]);
+        }
+        for (var j = 0; j < (secondary.classes || []).length; j++) {
+          mergeClass(secondary.classes[j]);
+        }
+        for (var p = 0; p < (primary.properties || []).length; p++) {
+          mergeProperty(primary.properties[p]);
+        }
+        for (var q = 0; q < (secondary.properties || []).length; q++) {
+          mergeProperty(secondary.properties[q]);
+        }
+        return finalizeParseContext(context);
+      }
+
+      function parseOntologyText(text, prefix, url, contentType) {
+        var parsed = {classes: [], properties: []};
+        var looksXml = /^\s*</.test(text) || /xml|rdf\+xml|owl\+xml/i.test(contentType || '');
+
+        if (looksXml) {
+          parsed = mergeParsedOntology(parsed, parseXmlOntology(text, prefix, url));
+        }
+        parsed = mergeParsedOntology(parsed, parseTurtleOntology(text, prefix, url));
+
+        parsed.classes = parsed.classes.map(function(item) {
+          item.prefixedName = makePrefixedName(prefix, url, item.iri);
+          item.label = item.label || getOntologyLocalName(item.iri);
+          return item;
+        });
+        parsed.properties = parsed.properties.map(function(item) {
+          item.prefixedName = makePrefixedName(prefix, url, item.iri);
+          item.label = item.label || getOntologyLocalName(item.iri);
+          item.domain = uniqueArray(item.domain);
+          item.range = uniqueArray(item.range);
+          return item;
+        });
+        return parsed;
+      }
+
+      function fetchOntology(prefix, url) {
+        return fetch(url, {
+          headers: {
+            Accept: 'text/turtle, application/rdf+xml, application/owl+xml, application/xml, text/xml, */*'
+          }
+        }).then(function(response) {
+          if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+          }
+          var contentType = response.headers.get('content-type') || '';
+          return response.text().then(function(text) {
+            var parsed = parseOntologyText(text, prefix, url, contentType);
+            if (!parsed.classes.length && !parsed.properties.length) {
+              throw new Error('No ontology classes or properties were found.');
+            }
+            return {
+              prefix: prefix,
+              url: url,
+              source: 'url',
+              label: prefix,
+              classes: parsed.classes,
+              properties: parsed.properties,
+              lastLoadedAt: new Date().toISOString(),
+              status: 'loaded'
+            };
+          });
+        });
+      }
+
+      function readOntologyFile(prefix, baseUrl, file) {
+        return new Promise(function(resolve, reject) {
+          var reader = new FileReader();
+          reader.onload = function(event) {
+            try {
+              var effectiveBase = baseUrl || '';
+              var parsed = parseOntologyText(event.target.result, prefix, effectiveBase, file.type || file.name);
+              if (!parsed.classes.length && !parsed.properties.length) {
+                throw new Error('No ontology classes or properties were found.');
+              }
+              resolve({
+                prefix: prefix,
+                url: effectiveBase || ('local file: ' + file.name),
+                source: 'file',
+                fileName: file.name,
+                label: prefix,
+                classes: parsed.classes,
+                properties: parsed.properties,
+                lastLoadedAt: new Date().toISOString(),
+                status: 'loaded'
+              });
+            } catch (e) {
+              reject(e);
+            }
+          };
+          reader.onerror = function() {
+            reject(new Error('Could not read the selected file.'));
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      function buildOntologyRecord(imported, existingId) {
+        imported.id = existingId || createOntologyId();
+        return imported;
+      }
+
+      function validateOntologyForm(prefix, url, editingId, file) {
+        if (!prefix || !/^[A-Za-z][\w-]*$/.test(prefix)) {
+          showMaterialAlert('Use a valid ontology prefix, such as dbo or schema.', {
+            title: 'Invalid prefix',
+            danger: true,
+            icon: '!'
+          });
+          $('#ontologyPrefix').focus();
+          return false;
+        }
+
+        if (!file && (!url || !/^[a-z][a-z0-9+.-]*:\/\//i.test(url))) {
+          showMaterialAlert('Enter a complete ontology URL or choose a local ontology file.', {
+            title: 'Ontology source required',
+            danger: true,
+            icon: '!'
+          });
+          $('#ontologyUrl').focus();
+          return false;
+        }
+
+        if (file && url && !/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) {
+          showMaterialAlert('When using a local file, the URL field is optional, but if filled it must be a complete base IRI.', {
+            title: 'Invalid base IRI',
+            danger: true,
+            icon: '!'
+          });
+          $('#ontologyUrl').focus();
+          return false;
+        }
+
+        for (var i = 0; i < ontologyState.ontologies.length; i++) {
+          var ontology = ontologyState.ontologies[i];
+          if (ontology.id !== editingId && ontology.prefix.toLowerCase() === prefix.toLowerCase()) {
+            showMaterialAlert('There is already an ontology registered with this prefix.', {
+              title: 'Prefix already exists',
+              danger: true,
+              icon: '!'
+            });
+            $('#ontologyPrefix').focus();
+            return false;
+          }
+        }
+        return true;
+      }
+
+      function saveOntologyFromForm(event) {
+        if (event) {
+          event.preventDefault();
+        }
+
+        var editingId = $('#ontologyEditingId').val();
+        var prefix = normalizeOntologyPrefix($('#ontologyPrefix').val());
+        var url = normalizeOntologyUrl($('#ontologyUrl').val());
+        var file = selectedOntologyFile;
+        if (!validateOntologyForm(prefix, url, editingId, file)) {
+          return;
+        }
+
+        $('#saveOntologyButton').prop('disabled', true).text(editingId ? 'Updating...' : 'Importing...');
+        setOntologyStatus('Importing ' + prefix + ':');
+
+        var importPromise = file ? readOntologyFile(prefix, url, file) : fetchOntology(prefix, url);
+        importPromise.then(function(imported) {
+          var record = buildOntologyRecord(imported, editingId || null);
+          if (editingId) {
+            for (var i = 0; i < ontologyState.ontologies.length; i++) {
+              if (ontologyState.ontologies[i].id === editingId) {
+                ontologyState.ontologies[i] = record;
+                break;
+              }
+            }
+          } else {
+            ontologyState.ontologies.push(record);
+          }
+          saveOntologyState();
+          renderOntologyList();
+          resetOntologyForm();
+          setOntologyStatus('Imported ' + record.prefix + ': ' + record.classes.length + ' classes, ' + record.properties.length + ' properties');
+        }).catch(function(error) {
+          showMaterialAlert('Could not load or interpret this ontology. For remote URLs, the server may block browser requests by CORS. In that case, download the ontology and import it as a local file. Details: ' + error.message, {
+            title: 'Ontology import failed',
+            danger: true,
+            icon: '!'
+          });
+          setOntologyStatus('Import failed');
+        }).then(function() {
+          $('#saveOntologyButton').prop('disabled', false).text($('#ontologyEditingId').val() ? 'Update' : 'Import');
+        });
+      }
+
+      function editOntology(id) {
+        var ontology = findOntologyById(id);
+        if (!ontology) {
+          return;
+        }
+        $('#ontologyEditingId').val(ontology.id);
+        $('#ontologyPrefix').val(ontology.prefix);
+        $('#ontologyUrl').val(ontology.source === 'file' && /^local file:/.test(ontology.url) ? '' : ontology.url);
+        $('#ontologyFileName').text(ontology.source === 'file' && ontology.fileName ? 'Previously imported: ' + ontology.fileName : '');
+        selectedOntologyFile = null;
+        $('#saveOntologyButton').text('Update');
+        setOntologyStatus('Editing ' + ontology.prefix + ':');
+        $('#ontologyPrefix').focus();
+      }
+
+      function reloadOntology(id) {
+        var ontology = findOntologyById(id);
+        if (!ontology) {
+          return;
+        }
+
+        if (ontology.source === 'file') {
+          showMaterialAlert('Browsers cannot reload a local file automatically after it was selected. Use Edit, choose the ontology file again, and click Update.', {
+            title: 'Select the file again'
+          });
+          editOntology(id);
+          return;
+        }
+
+        setOntologyStatus('Reloading ' + ontology.prefix + ':');
+        fetchOntology(ontology.prefix, ontology.url).then(function(imported) {
+          var record = buildOntologyRecord(imported, ontology.id);
+          for (var i = 0; i < ontologyState.ontologies.length; i++) {
+            if (ontologyState.ontologies[i].id === ontology.id) {
+              ontologyState.ontologies[i] = record;
+              break;
+            }
+          }
+          saveOntologyState();
+          renderOntologyList();
+          setOntologyStatus('Reloaded ' + record.prefix + ':');
+        }).catch(function(error) {
+          showMaterialAlert('Could not reload this ontology. Details: ' + error.message, {
+            title: 'Reload failed',
+            danger: true,
+            icon: '!'
+          });
+          setOntologyStatus('Reload failed');
+        });
+      }
+
+      function deleteOntology(id) {
+        var ontology = findOntologyById(id);
+        if (!ontology) {
+          return;
+        }
+
+        showMaterialConfirm('Remove ' + ontology.prefix + ': from ontology autocomplete suggestions?', {
+          title: 'Delete ontology?',
+          confirmText: 'Delete',
+          cancelText: 'Cancel',
+          danger: true,
+          icon: '!'
+        }).then(function(confirmed) {
+          if (!confirmed) {
+            return;
+          }
+          ontologyState.ontologies = ontologyState.ontologies.filter(function(item) {
+            return item.id !== id;
+          });
+          saveOntologyState();
+          renderOntologyList();
+          resetOntologyForm();
+          setOntologyStatus('Deleted ' + ontology.prefix + ':');
+        });
+      }
+
+      function installOntologyManagerHandlers() {
+        $('#ontologyForm').on('submit', saveOntologyFromForm);
+        $('#resetOntologyForm').on('click', resetOntologyForm);
+        $('#chooseOntologyFile').on('click', function() {
+          $('#ontologyFile').click();
+        });
+        $('#ontologyFile').on('change', function(event) {
+          selectedOntologyFile = event.target.files && event.target.files[0] ? event.target.files[0] : null;
+          $('#ontologyFileName').text(selectedOntologyFile ? selectedOntologyFile.name : '');
+        });
+        $('#ontologyList').on('click', 'button[data-action]', function() {
+          var id = $(this).closest('.ontology-list-item').attr('data-id');
+          var action = $(this).attr('data-action');
+          if (action === 'edit') {
+            editOntology(id);
+          } else if (action === 'reload') {
+            reloadOntology(id);
+          } else if (action === 'delete') {
+            deleteOntology(id);
+          }
+        });
+      }
+
+      function getBlocklyTextFieldName(field) {
+        if (field && field.name) {
+          return field.name;
+        }
+        if (!field || !field.sourceBlock_) {
+          return '';
+        }
+        for (var i = 0; i < field.sourceBlock_.inputList.length; i++) {
+          var row = field.sourceBlock_.inputList[i].fieldRow || [];
+          for (var j = 0; j < row.length; j++) {
+            if (row[j] === field) {
+              return row[j].name || '';
+            }
+          }
+        }
+        return '';
+      }
+
+      function isOntologyAutocompleteField(field) {
+        var block = field && field.sourceBlock_;
+        var name = getBlocklyTextFieldName(field);
+        if (!block || !name) {
+          return false;
+        }
+
+        var allowedByBlock = {
+          subjectmap: ['TERMMAPVALUE'],
+          class: ['CLASS'],
+          predicatemap: ['TERMMAPVALUE'],
+          objectmap: ['TERMMAPVALUE'],
+          subjectgraphtermap: ['TERMMAPVALUE'],
+          predicategraphtermap: ['TERMMAPVALUE'],
+          datatype: ['DATATYPE'],
+          objectdatatype: ['DATATYPE']
+        };
+        return !!(allowedByBlock[block.type] && allowedByBlock[block.type].indexOf(name) >= 0);
+      }
+
+      function getOntologyAutocompleteMode(field) {
+        var block = field && field.sourceBlock_;
+        var name = getBlocklyTextFieldName(field);
+        if (!block) {
+          return 'mixed';
+        }
+        if (block.type === 'class' && name === 'CLASS') {
+          return 'class';
+        }
+        if (block.type === 'predicatemap') {
+          return 'predicate';
+        }
+        return 'mixed';
+      }
+
+      function getAutocompleteTrigger(value, caret) {
+        var beforeCaret = value.substring(0, caret);
+        var match = beforeCaret.match(/(^|[\s<>"'([{;,])([A-Za-z][\w-]*):([\w.-]*)$/);
+        if (!match) {
+          return null;
+        }
+        return {
+          prefix: match[2],
+          query: match[3] || '',
+          replaceStart: beforeCaret.length - (match[2].length + 1 + (match[3] || '').length),
+          replaceEnd: caret
+        };
+      }
+
+      function findClassIriByPrefixedName(prefixedName) {
+        for (var i = 0; i < ontologyState.ontologies.length; i++) {
+          var classes = ontologyState.ontologies[i].classes || [];
+          for (var j = 0; j < classes.length; j++) {
+            if (classes[j].prefixedName === prefixedName) {
+              return classes[j].iri;
+            }
+          }
+        }
+        return '';
+      }
+
+      function getTripleMapAncestor(block) {
+        while (block) {
+          if (block.type === 'triplemap') {
+            return block;
+          }
+          block = block.getParent && block.getParent();
+        }
+        return null;
+      }
+
+      function getSubjectClassIrisForBlock(block) {
+        var tripleMap = getTripleMapAncestor(block);
+        var result = [];
+        if (!tripleMap) {
+          return result;
+        }
+
+        var subjectBlock = tripleMap.getInputTargetBlock('subjectmap');
+        var child = subjectBlock && subjectBlock.getInputTargetBlock('termmap');
+        while (child) {
+          if (child.type === 'class') {
+            var classValue = child.getFieldValue('CLASS');
+            var iri = findClassIriByPrefixedName(classValue);
+            if (iri) {
+              result.push(iri);
+            }
+          }
+          child = child.getNextBlock && child.getNextBlock();
+        }
+        return uniqueArray(result);
+      }
+
+      function isPropertyRelatedToClasses(property, classIris) {
+        if (!classIris.length || !property.domain || !property.domain.length) {
+          return false;
+        }
+        for (var i = 0; i < property.domain.length; i++) {
+          for (var j = 0; j < classIris.length; j++) {
+            if (property.domain[i] === classIris[j]) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      function getOntologySuggestionTypeLabel(item) {
+        if (item.kind === 'class') {
+          return 'Class';
+        }
+        if (item.type === 'objectProperty') {
+          return 'Object property';
+        }
+        if (item.type === 'dataProperty') {
+          return 'Data property';
+        }
+        if (item.type === 'annotationProperty') {
+          return 'Annotation property';
+        }
+        return 'Property';
+      }
+
+      function buildOntologySuggestions(field, value, caret) {
+        var trigger = getAutocompleteTrigger(value, caret);
+        if (!trigger) {
+          return null;
+        }
+
+        var ontology = findOntologyByPrefix(trigger.prefix);
+        if (!ontology) {
+          return null;
+        }
+
+        var query = (trigger.query || '').toLowerCase();
+        var mode = getOntologyAutocompleteMode(field);
+        var contextClassIris = mode === 'predicate' ? getSubjectClassIrisForBlock(field.sourceBlock_) : [];
+        var suggestions = [];
+
+        function addItems(items, kind) {
+          for (var i = 0; i < (items || []).length; i++) {
+            var item = items[i];
+            var haystack = [
+              item.prefixedName || '',
+              item.label || '',
+              item.comment || ''
+            ].join(' ').toLowerCase();
+            if (query && haystack.indexOf(query) === -1) {
+              continue;
+            }
+            var related = kind === 'property' && isPropertyRelatedToClasses(item, contextClassIris);
+            suggestions.push({
+              value: item.prefixedName,
+              label: item.label || getOntologyLocalName(item.iri),
+              comment: item.comment || '',
+              iri: item.iri,
+              type: item.type,
+              kind: kind,
+              related: related
+            });
+          }
+        }
+
+        if (mode === 'class') {
+          addItems(ontology.classes, 'class');
+        } else if (mode === 'predicate') {
+          addItems(ontology.properties, 'property');
+        } else {
+          addItems(ontology.classes, 'class');
+          addItems(ontology.properties, 'property');
+        }
+
+        suggestions.sort(function(a, b) {
+          if (a.related !== b.related) {
+            return a.related ? -1 : 1;
+          }
+          if (a.kind !== b.kind && mode === 'mixed') {
+            return a.kind === 'class' ? -1 : 1;
+          }
+          return a.value.localeCompare(b.value);
+        });
+
+        return {
+          suggestions: suggestions.slice(0, 40),
+          replaceStart: trigger.replaceStart,
+          replaceEnd: trigger.replaceEnd
+        };
+      }
+
+      function renderOntologyAutocomplete() {
+        var $menu = $('#ontologyAutocomplete');
+        var suggestions = ontologyAutocompleteState.suggestions;
+        if (!suggestions.length) {
+          hideOntologyAutocomplete();
+          return;
+        }
+
+        var html = '';
+        for (var i = 0; i < suggestions.length; i++) {
+          var item = suggestions[i];
+          var detail = getOntologySuggestionTypeLabel(item);
+          if (item.related) {
+            detail = 'Related ' + detail.toLowerCase();
+          }
+          if (item.label && item.label !== item.value) {
+            detail += ' · ' + item.label;
+          }
+          if (item.comment) {
+            detail += ' · ' + item.comment;
+          }
+          html += '<div class="ontology-autocomplete-item' + (i === ontologyAutocompleteState.selectedIndex ? ' is-active' : '') + '" role="option" data-index="' + i + '">' +
+            '<div class="ontology-autocomplete-name">' + escapeHtml(item.value) + '</div>' +
+            '<div class="ontology-autocomplete-detail">' + escapeHtml(detail) + '</div>' +
+          '</div>';
+        }
+        $menu.html(html).addClass('is-visible');
+        positionOntologyAutocomplete();
+      }
+
+      function positionOntologyAutocomplete() {
+        var input = ontologyAutocompleteState.input;
+        if (!input || !document.body.contains(input)) {
+          hideOntologyAutocomplete();
+          return;
+        }
+        var rect = input.getBoundingClientRect();
+        var $menu = $('#ontologyAutocomplete');
+        $menu.css({
+          left: Math.max(8, rect.left) + 'px',
+          top: (rect.bottom + 6) + 'px',
+          minWidth: Math.max(280, rect.width) + 'px'
+        });
+      }
+
+      function hideOntologyAutocomplete() {
+        ontologyAutocompleteState.suggestions = [];
+        ontologyAutocompleteState.selectedIndex = 0;
+        $('#ontologyAutocomplete').removeClass('is-visible').empty();
+      }
+
+      function updateOntologyAutocomplete(field, input) {
+        if (!field || !input || !isOntologyAutocompleteField(field)) {
+          hideOntologyAutocomplete();
+          return;
+        }
+
+        var caret = typeof input.selectionStart === 'number' ? input.selectionStart : input.value.length;
+        var result = buildOntologySuggestions(field, input.value, caret);
+        if (!result || !result.suggestions.length) {
+          hideOntologyAutocomplete();
+          return;
+        }
+
+        ontologyAutocompleteState.field = field;
+        ontologyAutocompleteState.input = input;
+        ontologyAutocompleteState.suggestions = result.suggestions;
+        ontologyAutocompleteState.selectedIndex = Math.min(ontologyAutocompleteState.selectedIndex, result.suggestions.length - 1);
+        ontologyAutocompleteState.replaceStart = result.replaceStart;
+        ontologyAutocompleteState.replaceEnd = result.replaceEnd;
+        renderOntologyAutocomplete();
+      }
+
+      function selectOntologySuggestion(index) {
+        var item = ontologyAutocompleteState.suggestions[index];
+        var input = ontologyAutocompleteState.input;
+        var field = ontologyAutocompleteState.field;
+        if (!item || !input || !field) {
+          hideOntologyAutocomplete();
+          return;
+        }
+
+        var before = input.value.substring(0, ontologyAutocompleteState.replaceStart);
+        var after = input.value.substring(ontologyAutocompleteState.replaceEnd);
+        var nextValue = before + item.value + after;
+        var caret = before.length + item.value.length;
+        input.value = nextValue;
+        input.oldValue_ = null;
+        if (input.setSelectionRange) {
+          input.setSelectionRange(caret, caret);
+        }
+        field.setValue(nextValue);
+        if (field.resizeEditor_) {
+          field.resizeEditor_();
+        }
+        if (field.sourceBlock_ && field.sourceBlock_.rendered) {
+          field.sourceBlock_.render();
+        }
+        generateCode();
+        hideOntologyAutocomplete();
+      }
+
+      function handleOntologyAutocompleteKeydown(event) {
+        if (!$('#ontologyAutocomplete').hasClass('is-visible')) {
+          return;
+        }
+
+        if (event.keyCode === 40) {
+          event.preventDefault();
+          event.stopPropagation();
+          ontologyAutocompleteState.selectedIndex = Math.min(
+            ontologyAutocompleteState.selectedIndex + 1,
+            ontologyAutocompleteState.suggestions.length - 1
+          );
+          renderOntologyAutocomplete();
+        } else if (event.keyCode === 38) {
+          event.preventDefault();
+          event.stopPropagation();
+          ontologyAutocompleteState.selectedIndex = Math.max(ontologyAutocompleteState.selectedIndex - 1, 0);
+          renderOntologyAutocomplete();
+        } else if (event.keyCode === 13 || event.keyCode === 9) {
+          event.preventDefault();
+          event.stopPropagation();
+          selectOntologySuggestion(ontologyAutocompleteState.selectedIndex);
+        } else if (event.keyCode === 27) {
+          event.preventDefault();
+          event.stopPropagation();
+          hideOntologyAutocomplete();
+        }
+      }
+
+      function attachOntologyAutocompleteToField(field) {
+        var input = Blockly.FieldTextInput.htmlInput_;
+        if (!input || !isOntologyAutocompleteField(field)) {
+          return;
+        }
+
+        input.addEventListener('keydown', handleOntologyAutocompleteKeydown, true);
+        input.addEventListener('keyup', function() {
+          updateOntologyAutocomplete(field, input);
+        });
+        input.addEventListener('input', function() {
+          updateOntologyAutocomplete(field, input);
+        });
+        setTimeout(function() {
+          updateOntologyAutocomplete(field, input);
+        }, 0);
+      }
+
+      function installOntologyAutocomplete() {
+        if (Blockly.FieldTextInput.prototype.ontologyAutocompleteInstalled_) {
+          return;
+        }
+        Blockly.FieldTextInput.prototype.ontologyAutocompleteInstalled_ = true;
+        var originalShowEditor = Blockly.FieldTextInput.prototype.showEditor_;
+        Blockly.FieldTextInput.prototype.showEditor_ = function(opt_quietInput) {
+          originalShowEditor.call(this, opt_quietInput);
+          attachOntologyAutocompleteToField(this);
+        };
+
+        $('#ontologyAutocomplete').on('mousedown', '.ontology-autocomplete-item', function(event) {
+          event.preventDefault();
+          selectOntologySuggestion(Number($(this).attr('data-index')));
+        });
+        $(window).on('scroll resize', positionOntologyAutocomplete);
+        function closeAutocompleteOnExternalPointer(event) {
+          if (!$(event.target).closest('#ontologyAutocomplete, .blocklyHtmlInput').length) {
+            hideOntologyAutocomplete();
+          }
+        }
+        document.addEventListener('mousedown', closeAutocompleteOnExternalPointer, true);
+        document.addEventListener('touchstart', closeAutocompleteOnExternalPointer, true);
+        $(document).on('mousedown', closeAutocompleteOnExternalPointer);
       }
 
       function workspaceToXmlText() {
@@ -2153,6 +3807,9 @@
 		  }
 		  
 		  installMaterialDialogHandlers();
+      installOntologyManagerHandlers();
+      installOntologyAutocomplete();
+      loadOntologyState();
 		  initializeWorkspacePersistence();
 		  installFlyoutBlockFallback();
       installWorkspaceResizeHooks();
