@@ -307,11 +307,19 @@
 				align-items: flex-end;
 				display: grid;
 				gap: 12px;
-				grid-template-columns: minmax(140px, 180px) minmax(240px, 1fr) auto auto auto;
+				grid-template-columns: minmax(140px, 180px) minmax(240px, 1fr) auto;
 			}
 
 			.ontology-form .form-group {
 				margin-bottom: 0;
+			}
+
+			.ontology-form-buttons {
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+				justify-content: flex-start;
+				padding-top: 0;
 			}
 
 			.ontology-form label {
@@ -328,6 +336,20 @@
 				height: 40px;
 			}
 
+			.ontology-control-lock {
+				display: block;
+			}
+
+			.ontology-control-lock.is-disabled {
+				cursor: not-allowed;
+			}
+
+			.ontology-form .form-control[disabled],
+			.ontology-form .btn[disabled] {
+				cursor: not-allowed;
+				opacity: 0.65;
+			}
+
 			.ontology-form .btn,
 			.ontology-list .btn,
 			.ontology-catalog .btn,
@@ -335,6 +357,18 @@
 				border-radius: 8px;
 				font-weight: 500;
 				height: 40px;
+			}
+
+			.ontology-form-actions {
+				align-items: center;
+				display: flex;
+				gap: 12px;
+				justify-content: flex-end;
+				min-height: 40px;
+			}
+
+			.ontology-form-actions .btn {
+				flex: 0 0 auto;
 			}
 
 			.ontology-form .btn-primary {
@@ -346,8 +380,7 @@
 				color: #607d8b;
 				display: block;
 				font-size: 12px;
-				margin-top: 6px;
-				max-width: 220px;
+				max-width: 100%;
 				overflow: hidden;
 				text-overflow: ellipsis;
 				white-space: nowrap;
@@ -355,8 +388,8 @@
 
 			.ontology-catalog {
 				display: grid;
-				gap: 12px;
-				grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+				gap: 16px;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
 			}
 
 			.ontology-catalog-item {
@@ -366,7 +399,7 @@
 				display: grid;
 				gap: 12px;
 				grid-template-columns: minmax(0, 1fr) auto;
-				padding: 14px;
+				padding: 18px;
 			}
 
 			.ontology-catalog-title {
@@ -380,12 +413,28 @@
 				color: #607d8b;
 				display: grid;
 				font-size: 13px;
-				gap: 4px;
+				gap: 8px;
+				line-height: 1.45;
+				min-width: 0;
 			}
 
-			.ontology-catalog-meta a {
+			.ontology-catalog-meta-row {
+				display: grid;
+				gap: 2px;
+				min-width: 0;
+			}
+
+			.ontology-catalog-meta a,
+			.ontology-catalog-meta span {
 				color: #1565c0;
+				min-width: 0;
 				overflow-wrap: anywhere;
+				word-break: break-word;
+			}
+
+			.ontology-catalog-meta-row strong,
+			.ontology-catalog-meta-row span {
+				color: #607d8b;
 			}
 
 			.ontology-catalog-actions {
@@ -833,6 +882,12 @@
 				color: #b0bec5;
 			}
 
+			@media (max-width: 1200px) {
+				.ontology-catalog {
+					grid-template-columns: repeat(2, minmax(0, 1fr));
+				}
+			}
+
 			@media (max-width: 900px) {
 				body {
 					overflow: auto;
@@ -881,8 +936,16 @@
 				}
 
 				.ontology-form,
+				.ontology-catalog,
 				.ontology-list-item {
 					grid-template-columns: 1fr;
+				}
+
+				.ontology-form-actions {
+					align-items: stretch;
+					flex-direction: column;
+					justify-content: flex-start;
+					padding-top: 0;
 				}
 
 				.ontology-list-actions {
@@ -1002,19 +1065,25 @@
 						<input id="ontologyEditingId" type="hidden" />
 						<div class="form-group">
 							<label for="ontologyPrefix">Prefix</label>
-							<input id="ontologyPrefix" type="text" class="form-control" placeholder="dbo" autocomplete="off" />
+							<input id="ontologyPrefix" type="text" class="form-control" placeholder="FOAF" autocomplete="off" />
 						</div>
 						<div class="form-group">
 							<label for="ontologyUrl">Ontology URL or base IRI</label>
-							<input id="ontologyUrl" type="url" class="form-control" placeholder="http://xmlns.com/foaf/0.1/" autocomplete="off" />
+							<span id="ontologyUrlLock" class="ontology-control-lock">
+								<input id="ontologyUrl" type="url" class="form-control" placeholder="http://xmlns.com/foaf/0.1/" autocomplete="off" />
+							</span>
 						</div>
-						<div class="form-group">
-							<input id="ontologyFile" type="file" accept=".owl,.rdf,.ttl,.nt,.xml,.n3,text/turtle,application/rdf+xml,application/owl+xml,application/xml,text/xml,text/plain" style="display:none;" />
-							<button id="chooseOntologyFile" type="button" class="btn btn-default">Local file</button>
+						<div class="form-group ontology-form-buttons">
 							<span id="ontologyFileName" class="ontology-file-name"></span>
+							<div class="ontology-form-actions">
+								<input id="ontologyFile" type="file" accept=".owl,.rdf,.ttl,.nt,.xml,.n3,text/turtle,application/rdf+xml,application/owl+xml,application/xml,text/xml,text/plain" style="display:none;" />
+								<span id="ontologyFileLock" class="ontology-control-lock">
+									<button id="chooseOntologyFile" type="button" class="btn btn-default">Local file</button>
+								</span>
+								<button id="saveOntologyButton" type="submit" class="btn btn-primary">Import</button>
+								<button id="resetOntologyForm" type="button" class="btn btn-default">Cancel</button>
+							</div>
 						</div>
-						<button id="saveOntologyButton" type="submit" class="btn btn-primary">Import</button>
-						<button id="resetOntologyForm" type="button" class="btn btn-default">Cancel</button>
 					</form>
 					<p class="ontology-proxy-note">Published deployments use Juma's serverless ontology proxy automatically. For local file usage, run <code>node ontology-proxy-server.js</code>. Public proxies are still used only as last-resort demo fallbacks.</p>
 				</section>
@@ -1254,7 +1323,7 @@
           name: 'DBpedia Ontology',
           prefix: 'dbo',
           url: 'https://mappings.dbpedia.org/server/ontology/dbpedia.owl',
-          documentation: 'https://mappings.dbpedia.org/server/ontology/classes/'
+          documentation: 'https://dief.tools.dbpedia.org/server/ontology/classes/'
         }
       ];
 
@@ -1937,9 +2006,9 @@
             '<div>' +
               '<h3 class="ontology-catalog-title">' + escapeHtml(item.name) + '</h3>' +
               '<div class="ontology-catalog-meta">' +
-                '<span><strong>Prefix:</strong> ' + escapeHtml(item.prefix) + '</span>' +
-                '<span><strong>URL:</strong> ' + escapeHtml(item.url) + '</span>' +
-                '<span><strong>Documentation:</strong> <a href="' + escapeHtml(item.documentation) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(item.documentation) + '</a></span>' +
+                '<div class="ontology-catalog-meta-row"><strong>Prefix:</strong><span>' + escapeHtml(item.prefix) + '</span></div>' +
+                '<div class="ontology-catalog-meta-row"><strong>URL:</strong><span>' + escapeHtml(item.url) + '</span></div>' +
+                '<div class="ontology-catalog-meta-row"><strong>Documentation:</strong><a href="' + escapeHtml(item.documentation) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(item.documentation) + '</a></div>' +
                 (imported ? '<span class="ontology-prefix-pill">Imported</span>' : '') +
               '</div>' +
             '</div>' +
@@ -1978,6 +2047,31 @@
         $('#ontologyFileName').text('');
         selectedOntologyFile = null;
         $('#saveOntologyButton').text('Import');
+        updateOntologyImportAvailability();
+      }
+
+      function setOntologyControlDisabled($lock, $control, disabled, message) {
+        $control.prop('disabled', !!disabled);
+        $lock.toggleClass('is-disabled', !!disabled);
+        if (disabled && message) {
+          $lock.attr('title', message);
+          $control.attr('title', message);
+        } else {
+          $lock.removeAttr('title');
+          $control.removeAttr('title');
+        }
+      }
+
+      function updateOntologyImportAvailability() {
+        var urlValue = normalizeOntologyUrl($('#ontologyUrl').val());
+        var hasUrl = !!urlValue;
+        var hasFile = !!selectedOntologyFile;
+        var fileMessage = hasUrl ? 'Local file is disabled because Ontology URL or base IRI is already filled.' : '';
+        var urlMessage = hasFile ? 'Ontology URL or base IRI is disabled because a local file is already selected.' : '';
+
+        setOntologyControlDisabled($('#ontologyFileLock'), $('#chooseOntologyFile'), hasUrl, fileMessage);
+        $('#ontologyFile').prop('disabled', hasUrl);
+        setOntologyControlDisabled($('#ontologyUrlLock'), $('#ontologyUrl'), hasFile, urlMessage);
       }
 
       function getOntologyImportMethodLabel(method, source) {
@@ -3198,6 +3292,7 @@
         selectedOntologyFile = null;
         $('#saveOntologyButton').text('Update');
         setOntologyStatus('Editing ' + ontology.prefix + ':');
+        updateOntologyImportAvailability();
         $('#ontologyPrefix').focus();
       }
 
@@ -3261,13 +3356,16 @@
       function installOntologyManagerHandlers() {
         $('#ontologyForm').on('submit', saveOntologyFromForm);
         $('#resetOntologyForm').on('click', resetOntologyForm);
+        $('#ontologyUrl').on('input change blur', updateOntologyImportAvailability);
         $('#chooseOntologyFile').on('click', function() {
           $('#ontologyFile').click();
         });
         $('#ontologyFile').on('change', function(event) {
           selectedOntologyFile = event.target.files && event.target.files[0] ? event.target.files[0] : null;
           $('#ontologyFileName').text(selectedOntologyFile ? selectedOntologyFile.name : '');
+          updateOntologyImportAvailability();
         });
+        updateOntologyImportAvailability();
         $('#ontologyCatalog').on('click', 'button[data-action="catalog-import"]', function() {
           var prefix = $(this).closest('.ontology-catalog-item').attr('data-prefix');
           importCatalogOntology(prefix);
