@@ -2213,25 +2213,6 @@
         setOntologyControlDisabled($('#ontologyUrlLock'), $('#ontologyUrl'), hasFile, urlMessage);
       }
 
-      function getOntologyImportMethodLabel(method, source) {
-        if (method == 'direct') {
-          return 'Direct access';
-        }
-        if (method == 'jumaProxy' || method == 'localDevelopmentProxy') {
-          return 'Juma proxy';
-        }
-        if (method == 'allOrigins') {
-          return 'AllOrigins';
-        }
-        if (method == 'corsProxyIo') {
-          return 'CorsProxy.io';
-        }
-        if (method == 'file' || source == 'file') {
-          return 'Local file';
-        }
-        return 'URL';
-      }
-
       function getPaginationPages(currentPage, totalPages) {
         var pages = [];
         var start = Math.max(1, currentPage - 2);
@@ -2270,7 +2251,6 @@
           var propertiesCount = (ontology.properties || []).length;
           var lastLoaded = ontology.lastLoadedAt ? new Date(ontology.lastLoadedAt).toLocaleString() : 'not loaded';
           var source = ontology.source === 'file' ? 'Local file' : 'URL';
-          var importMethod = getOntologyImportMethodLabel(ontology.importMethod, ontology.source);
           html += '<article class="ontology-list-item" data-id="' + escapeHtml(ontology.id) + '">' +
             '<div class="ontology-list-main">' +
               '<h2 class="ontology-list-title">' +
@@ -2282,7 +2262,6 @@
                 '<span>' + classesCount + ' classes</span>' +
                 '<span>' + propertiesCount + ' properties</span>' +
                 '<span>' + escapeHtml(source) + '</span>' +
-                '<span>Method: ' + escapeHtml(importMethod) + '</span>' +
                 '<span>Loaded: ' + escapeHtml(lastLoaded) + '</span>' +
               '</div>' +
             '</div>' +
@@ -3078,7 +3057,7 @@
         return parsed;
       }
 
-      var ONTOLOGY_URL_IMPORT_FAILURE_MESSAGE = 'Unable to import this ontology from the provided URL. The application tried direct access, the Juma proxy, AllOrigins, and CorsProxy.io, but all attempts failed. Please download the ontology file manually and import it using the file upload option.';
+      var ONTOLOGY_URL_IMPORT_FAILURE_MESSAGE = 'Unable to import this ontology from the provided URL using the Juma proxy. Please check that the proxy is available, or download the ontology file manually and import it using the file upload option.';
       var ONTOLOGY_METADATA_ONLY_MESSAGE = 'The URL was loaded successfully, but it returned only ontology metadata and no classes or properties. Please use a URL that points to the full OWL/RDF/Turtle ontology document, or import the ontology file manually using the file upload option.';
 
       function isLikelyOntologyMetadataDocument(text, contentType) {
@@ -3088,12 +3067,6 @@
           /^\s*(?:@prefix|prefix|<\?xml|<rdf:|\{|\[)/i.test(value);
         var hasOntologyMetadata = /owl:\s*Ontology|[#\/]Ontology\b|voaf[#\/]Vocabulary|preferredNamespace(?:Prefix|Uri)|rdf:type\s+[A-Za-z][\w-]*:Vocabulary|rdf:type\s+[A-Za-z][\w-]*:Ontology/i.test(value);
         return looksRdf && hasOntologyMetadata;
-      }
-
-      function createStopFallbackError(message) {
-        var error = new Error(message);
-        error.stopOntologyFallbacks = true;
-        return error;
       }
 
       function getJumaOntologyProxyUrl(ontologyUrl) {
@@ -3114,91 +3087,54 @@
         return proxyOrigin + proxyPath + '?url=' + encodeURIComponent(ontologyUrl);
       }
 
-      function fetchOntologyWithFallbacks(ontologyUrl, parseContent) {
+      function fetchOntologyWithJumaProxy(ontologyUrl, parseContent) {
         var acceptHeader = 'text/turtle, application/rdf+xml, application/ld+json, application/n-triples, text/plain, */*';
-        var attempts = [
-          {
-            name: 'direct',
-            url: ontologyUrl,
-            successMessage: 'Ontology imported successfully using direct access.'
-          },
-          {
-            name: 'jumaProxy',
-            url: getJumaOntologyProxyUrl(ontologyUrl),
-            successMessage: 'Ontology imported successfully using the Juma proxy.'
-          },
-          {
-            name: 'allOrigins',
-            url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(ontologyUrl),
-            successMessage: 'Ontology imported successfully using AllOrigins.'
-          },
-          {
-            name: 'corsProxyIo',
-            url: 'https://corsproxy.io/?url=' + encodeURIComponent(ontologyUrl),
-            successMessage: 'Ontology imported successfully using CorsProxy.io.'
-          }
-        ];
-        var errors = [];
+        var attempt = {
+          name: 'jumaProxy',
+          url: getJumaOntologyProxyUrl(ontologyUrl),
+          successMessage: 'Ontology imported successfully using the Juma proxy.'
+        };
 
-        function tryAttempt(index) {
-          if (index >= attempts.length) {
-            var finalError = new Error(ONTOLOGY_URL_IMPORT_FAILURE_MESSAGE);
-            finalError.details = errors;
-            throw finalError;
+        return fetch(attempt.url, {
+          credentials: 'omit',
+          headers: {
+            Accept: acceptHeader
           }
-
-          var attempt = attempts[index];
-          return fetch(attempt.url, {
-            credentials: 'omit',
-            headers: {
-              Accept: acceptHeader
+        }).then(function(response) {
+          if (!response.ok) {
+            throw new Error(attempt.name + ' failed with status ' + response.status);
+          }
+          var contentType = response.headers.get('content-type') || '';
+          return response.text().then(function(content) {
+            if (!content || !content.replace(/^\s+|\s+$/g, '')) {
+              throw new Error(attempt.name + ' returned empty content');
             }
-          }).then(function(response) {
-            if (!response.ok) {
-              throw new Error(attempt.name + ' failed with status ' + response.status);
+            var parsed = null;
+            if (parseContent) {
+              parsed = parseContent(content, contentType, attempt);
             }
-            var contentType = response.headers.get('content-type') || '';
-            return response.text().then(function(content) {
-              if (!content || !content.replace(/^\s+|\s+$/g, '')) {
-                throw new Error(attempt.name + ' returned empty content');
-              }
-              var parsed = null;
-              if (parseContent) {
-                parsed = parseContent(content, contentType, attempt);
-              }
-              return {
-                content: content,
-                contentType: contentType,
-                parsed: parsed,
-                source: attempt.name,
-                message: attempt.successMessage
-              };
-            });
-          }).catch(function(error) {
-            errors.push({
+            return {
+              content: content,
+              contentType: contentType,
+              parsed: parsed,
               source: attempt.name,
-              message: error.message
-            });
-            if (window.console && console.warn) {
-              console.warn('Ontology import attempt failed: ' + attempt.name, error);
-            }
-            if (error.stopOntologyFallbacks) {
-              error.details = errors;
-              throw error;
-            }
-            return tryAttempt(index + 1);
+              message: attempt.successMessage
+            };
           });
-        }
-
-        return tryAttempt(0);
+        }).catch(function(error) {
+          if (window.console && console.warn) {
+            console.warn('Ontology import through Juma proxy failed:', error);
+          }
+          throw error;
+        });
       }
 
       function fetchOntology(prefix, url) {
-        return fetchOntologyWithFallbacks(url, function(content, contentType, attempt) {
+        return fetchOntologyWithJumaProxy(url, function(content, contentType, attempt) {
           var parsed = parseOntologyText(content, prefix, url, contentType);
           if (!parsed.classes.length && !parsed.properties.length) {
             if (isLikelyOntologyMetadataDocument(content, contentType)) {
-              throw createStopFallbackError(ONTOLOGY_METADATA_ONLY_MESSAGE);
+              throw new Error(ONTOLOGY_METADATA_ONLY_MESSAGE);
             }
             throw new Error(attempt.name + ' returned content that could not be parsed as an ontology');
           }
