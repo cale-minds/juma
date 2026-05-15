@@ -838,6 +838,36 @@
 				box-shadow: 0 4px 12px rgba(198, 40, 40, 0.28);
 			}
 
+			body.is-ontology-importing {
+				overflow: hidden;
+			}
+
+			.ontology-import-loading {
+				align-items: center;
+				background: rgba(15, 23, 42, 0.62);
+				backdrop-filter: blur(3px);
+				display: none;
+				inset: 0;
+				justify-content: center;
+				padding: 24px;
+				pointer-events: auto;
+				position: fixed;
+				z-index: 1900;
+			}
+
+			.ontology-import-loading.is-visible {
+				display: flex;
+			}
+
+			.ontology-import-loading__image {
+				display: block;
+				height: auto;
+				max-height: min(320px, 50vh);
+				max-width: min(520px, 82vw);
+				object-fit: contain;
+				user-select: none;
+			}
+
 			.app-footer {
 				align-items: center;
 				background: #ffffff;
@@ -1112,6 +1142,9 @@
 				<button id="materialDialogPrimary" type="button" class="material-dialog__button material-dialog__button--primary">OK</button>
 			</div>
 		</section>
+	</div>
+	<div id="ontologyImportLoading" class="ontology-import-loading" aria-hidden="true" aria-live="polite" aria-label="Loading">
+		<img class="ontology-import-loading__image" src="juma_loading_black_text.gif" alt="Loading" />
 	</div>
 	<div id="ontologyAutocomplete" class="ontology-autocomplete" role="listbox" aria-label="Ontology suggestions"></div>
 		<xml id="toolbox" style="display: none">  
@@ -1419,6 +1452,27 @@
 		      }
 		    });
 		  }
+
+      var ontologyImportLoadingCount = 0;
+
+      function showOntologyImportLoading() {
+        ontologyImportLoadingCount += 1;
+        $('#ontologyImportLoading')
+          .addClass('is-visible')
+          .attr('aria-hidden', 'false');
+        $('body').addClass('is-ontology-importing');
+      }
+
+      function hideOntologyImportLoading() {
+        ontologyImportLoadingCount = Math.max(0, ontologyImportLoadingCount - 1);
+        if (ontologyImportLoadingCount > 0) {
+          return;
+        }
+        $('#ontologyImportLoading')
+          .removeClass('is-visible')
+          .attr('aria-hidden', 'true');
+        $('body').removeClass('is-ontology-importing');
+      }
 
 		  var autoConnectRules = {
 		  	predefinedprefix: [{parentType: 'mapping', inputName: 'mapping', inputKind: 'statement'}],
@@ -3244,6 +3298,7 @@
 
         var existing = findOntologyByPrefix(item.prefix);
         var startImport = function() {
+          showOntologyImportLoading();
           setCatalogImportButtonState(item.prefix, true);
           setOntologyStatus('Importing ' + item.prefix + ': from catalog');
           fetchOntology(item.prefix, item.url).then(function(imported) {
@@ -3263,6 +3318,7 @@
             });
             setOntologyStatus('Import failed');
           }).then(function() {
+            hideOntologyImportLoading();
             setCatalogImportButtonState(item.prefix, false);
           });
         };
@@ -3342,6 +3398,7 @@
           return;
         }
 
+        showOntologyImportLoading();
         $('#saveOntologyButton').prop('disabled', true).text(editingId ? 'Updating...' : 'Importing...');
         setOntologyStatus('Importing ' + prefix + ':');
 
@@ -3361,6 +3418,7 @@
           });
           setOntologyStatus('Import failed');
         }).then(function() {
+          hideOntologyImportLoading();
           $('#saveOntologyButton').prop('disabled', false).text($('#ontologyEditingId').val() ? 'Update' : 'Import');
         });
       }
@@ -4520,7 +4578,12 @@
         if (!file) {
           return;
         }
+        showOntologyImportLoading();
         var reader = new FileReader();
+        var finishLoading = function() {
+          hideOntologyImportLoading();
+          $('#loadTtlFile').val('');
+        };
         reader.onload = function(event) {
           try {
             importTtlText(event.target.result);
@@ -4531,9 +4594,26 @@
               icon: '!'
             });
           }
-          $('#loadTtlFile').val('');
+          finishLoading();
         };
-        reader.readAsText(file);
+        reader.onerror = function() {
+          showMaterialAlert('Could not read this TTL file.', {
+            title: 'Load failed',
+            danger: true,
+            icon: '!'
+          });
+          finishLoading();
+        };
+        try {
+          reader.readAsText(file);
+        } catch (e) {
+          showMaterialAlert('Could not read this TTL file.', {
+            title: 'Load failed',
+            danger: true,
+            icon: '!'
+          });
+          finishLoading();
+        }
       }
 
       function generateCode(event) {
