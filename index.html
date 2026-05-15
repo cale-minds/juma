@@ -2250,7 +2250,9 @@
           var classesCount = (ontology.classes || []).length;
           var propertiesCount = (ontology.properties || []).length;
           var lastLoaded = ontology.lastLoadedAt ? new Date(ontology.lastLoadedAt).toLocaleString() : 'not loaded';
+          var isLocalFile = ontology.source === 'file';
           var source = ontology.source === 'file' ? 'Local file' : 'URL';
+          var localFileActionDisabled = isLocalFile ? ' disabled title="Local file ontologies cannot be edited or reloaded automatically. Delete and import the file again to update it."' : '';
           html += '<article class="ontology-list-item" data-id="' + escapeHtml(ontology.id) + '">' +
             '<div class="ontology-list-main">' +
               '<h2 class="ontology-list-title">' +
@@ -2266,8 +2268,8 @@
               '</div>' +
             '</div>' +
             '<div class="ontology-list-actions">' +
-              '<button type="button" class="btn btn-default" data-action="edit">Edit</button>' +
-              '<button type="button" class="btn btn-default" data-action="reload">Reload</button>' +
+              '<button type="button" class="btn btn-default" data-action="edit"' + localFileActionDisabled + '>Edit</button>' +
+              '<button type="button" class="btn btn-default" data-action="reload"' + localFileActionDisabled + '>Reload</button>' +
               '<button type="button" class="btn btn-danger" data-action="delete">Delete</button>' +
             '</div>' +
           '</article>';
@@ -3458,6 +3460,9 @@
           renderOntologyList();
         });
         $('#ontologyList').on('click', 'button[data-action]', function() {
+          if (this.disabled) {
+            return;
+          }
           var id = $(this).closest('.ontology-list-item').attr('data-id');
           var action = $(this).attr('data-action');
           if (action === 'edit') {
