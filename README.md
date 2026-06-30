@@ -8,7 +8,7 @@ In this implementation, we have applied the Juma method to the W3C Recommendatio
 
 This repository was evolved as an educational activity during the Semantic Web course at UFRJ, with the objective of studying, understanding, and extending the original tool in an academic context.
 
-Based on the analysis of the commits made in this repository, the following features and improvements were implemented during this evolution:
+The following features and improvements were implemented during this evolution:
 
 - Import of ontologies with support for autocomplete.
 - Additional tools and interaction improvements for ontology import.
