@@ -4,6 +4,31 @@ Juma, jigsaw puzzles for representing mapping, is a method that applies the bloc
 
 In this implementation, we have applied the Juma method to the W3C Recommendation [R2RML](https://www.w3.org/TR/r2rml/). 
 
+## Academic evolution of the project
+
+This repository was evolved as an educational activity during the Semantic Web course at UFRJ, with the objective of studying, understanding, and extending the original tool in an academic context.
+
+Based on the analysis of the commits made in this repository, the following features and improvements were implemented during this evolution:
+
+- Import of ontologies with support for autocomplete.
+- Additional tools and interaction improvements for ontology import.
+- Synchronization of prefix blocks with imported ontologies.
+- Loading overlay for ontology and TTL import operations.
+- Use of the Juma proxy only for ontology imports.
+- Restriction of edit and reload actions for local ontologies.
+- Import of R2RML mappings in TTL format.
+- Persistent workspace state.
+- Export of R2RML mappings in TTL format.
+- Improvements to the workspace layout and toolbar controls.
+- Replacement of browser dialogs with a Material-style modal.
+- Addition of Juma branding, page title, favicon, and footer credits.
+- Visual preview for fallback flyout drag interactions.
+- Fix for automatic toolbox block attachment.
+
+## Authorship and intellectual property
+
+The authorship of the original project remains with its original author, Ademar Crotti Junior. The work carried out in this repository consists only of an academic evolution of the tool for educational purposes, respecting the terms of the project's license and the intellectual property associated with the original work.
+
 ## Using the code
 
 Open index.html into a browser. 
