@@ -2085,7 +2085,8 @@
           return null;
         }
         for (var i = 0; i < ontologyState.ontologies.length; i++) {
-          if (normalizePrefixBlockUri(ontologyState.ontologies[i].url) === normalized) {
+          if (normalizePrefixBlockUri(ontologyState.ontologies[i].namespaceUrl) === normalized ||
+              normalizePrefixBlockUri(ontologyState.ontologies[i].url) === normalized) {
             return ontologyState.ontologies[i];
           }
         }
@@ -2124,8 +2125,8 @@
         try {
           if (changedFieldName === 'PREFIX' && prefix) {
             ontology = findOntologyByPrefix(prefix);
-            if (ontology && ontology.url) {
-              changed = setPrefixBlockFieldValue(block, 'URI', ontology.url);
+            if (ontology && (ontology.namespaceUrl || ontology.url)) {
+              changed = setPrefixBlockFieldValue(block, 'URI', ontology.namespaceUrl || ontology.url);
             }
           } else if (changedFieldName === 'URI' && uri) {
             ontology = findOntologyByUrl(uri);
@@ -2134,8 +2135,8 @@
             }
           } else {
             ontology = prefix ? findOntologyByPrefix(prefix) : null;
-            if (ontology && ontology.url) {
-              changed = setPrefixBlockFieldValue(block, 'URI', ontology.url);
+            if (ontology && (ontology.namespaceUrl || ontology.url)) {
+              changed = setPrefixBlockFieldValue(block, 'URI', ontology.namespaceUrl || ontology.url);
             } else {
               ontology = uri ? findOntologyByUrl(uri) : null;
               if (ontology && ontology.prefix) {
@@ -2321,9 +2322,12 @@
         }
       }
 
-      function makePrefixedName(prefix, baseUrl, iri) {
+      function makePrefixedName(prefix, baseUrl, iri, prefixes) {
         var local = '';
         var candidates = [baseUrl || ''];
+        if (prefixes && prefixes[prefix]) {
+          candidates.unshift(prefixes[prefix]);
+        }
         if (baseUrl && /^https:\/\//i.test(baseUrl)) {
           candidates.push(baseUrl.replace(/^https:\/\//i, 'http://'));
         } else if (baseUrl && /^http:\/\//i.test(baseUrl)) {
@@ -2346,7 +2350,9 @@
 
       function createParseContext(prefix, url, prefixes) {
         prefixes = prefixes || {};
-        prefixes[prefix] = url;
+        if (!prefixes[prefix] && url) {
+          prefixes[prefix] = url;
+        }
         prefixes.rdf = prefixes.rdf || 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
         prefixes.rdfs = prefixes.rdfs || 'http://www.w3.org/2000/01/rdf-schema#';
         prefixes.owl = prefixes.owl || 'http://www.w3.org/2002/07/owl#';
@@ -2354,6 +2360,7 @@
         return {
           prefix: prefix,
           url: url,
+          namespaceUrl: prefixes[prefix] || url || '',
           prefixes: prefixes,
           classesByIri: {},
           propertiesByIri: {}
@@ -2367,7 +2374,7 @@
         if (!context.classesByIri[iri]) {
           context.classesByIri[iri] = {
             iri: iri,
-            prefixedName: makePrefixedName(context.prefix, context.url, iri),
+            prefixedName: makePrefixedName(context.prefix, context.namespaceUrl || context.url, iri, context.prefixes),
             label: getOntologyLocalName(iri),
             comment: ''
           };
@@ -2382,7 +2389,7 @@
         if (!context.propertiesByIri[iri]) {
           context.propertiesByIri[iri] = {
             iri: iri,
-            prefixedName: makePrefixedName(context.prefix, context.url, iri),
+            prefixedName: makePrefixedName(context.prefix, context.namespaceUrl || context.url, iri, context.prefixes),
             type: type || 'property',
             domain: [],
             range: [],
@@ -2423,7 +2430,9 @@
 
         return {
           classes: classes,
-          properties: properties
+          properties: properties,
+          namespaceUrl: context.namespaceUrl || '',
+          prefixes: context.prefixes || {}
         };
       }
 
@@ -2600,7 +2609,6 @@
 
       function getTurtlePrefixMap(text, prefix, url) {
         var prefixes = {};
-        prefixes[prefix] = url;
         var re = /(?:@prefix|prefix)\s+([A-Za-z][\w-]*|):\s*<([^>]+)>/ig;
         var match;
         while ((match = re.exec(text)) != null) {
@@ -3002,6 +3010,7 @@
 
       function mergeParsedOntology(primary, secondary) {
         var context = createParseContext('__merged__', '', {});
+        var mergedPrefixes = {};
         function mergeClass(item) {
           var entity = addClassEntity(context, item.iri);
           entity.prefixedName = item.prefixedName;
@@ -3028,7 +3037,19 @@
         for (var q = 0; q < (secondary.properties || []).length; q++) {
           mergeProperty(secondary.properties[q]);
         }
-        return finalizeParseContext(context);
+        var merged = finalizeParseContext(context);
+        function copyPrefixes(prefixes) {
+          for (var key in (prefixes || {})) {
+            if (prefixes.hasOwnProperty(key)) {
+              mergedPrefixes[key] = prefixes[key];
+            }
+          }
+        }
+        copyPrefixes(primary.prefixes);
+        copyPrefixes(secondary.prefixes);
+        merged.namespaceUrl = primary.namespaceUrl || secondary.namespaceUrl || '';
+        merged.prefixes = mergedPrefixes;
+        return merged;
       }
 
       function parseOntologyText(text, prefix, url, contentType) {
@@ -3045,12 +3066,12 @@
         parsed = mergeParsedOntology(parsed, parseTurtleOntology(text, prefix, url));
 
         parsed.classes = parsed.classes.map(function(item) {
-          item.prefixedName = makePrefixedName(prefix, url, item.iri);
+          item.prefixedName = makePrefixedName(prefix, parsed.namespaceUrl || url, item.iri, parsed.prefixes);
           item.label = item.label || getOntologyLocalName(item.iri);
           return item;
         });
         parsed.properties = parsed.properties.map(function(item) {
-          item.prefixedName = makePrefixedName(prefix, url, item.iri);
+          item.prefixedName = makePrefixedName(prefix, parsed.namespaceUrl || url, item.iri, parsed.prefixes);
           item.label = item.label || getOntologyLocalName(item.iri);
           item.domain = uniqueArray(item.domain);
           item.range = uniqueArray(item.range);
@@ -3149,6 +3170,7 @@
             source: 'url',
             importMethod: result.source,
             importMessage: result.message,
+            namespaceUrl: parsed.namespaceUrl || url,
             label: prefix,
             classes: parsed.classes,
             properties: parsed.properties,
@@ -3174,6 +3196,7 @@
                 source: 'file',
                 importMethod: 'file',
                 importMessage: 'Ontology imported successfully using local file upload.',
+                namespaceUrl: parsed.namespaceUrl || effectiveBase || '',
                 fileName: file.name,
                 label: prefix,
                 classes: parsed.classes,
